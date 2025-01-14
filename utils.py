@@ -18,13 +18,14 @@ openai = OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_historical_image(territory, time_period, historical_data):
     try:
+        events_text = ', '.join(event['text'] for event in historical_data['events'])
         prompt = f"""Создайте детальное изображение исторической сцены для {territory} в период {time_period}.
 
         Изображение должно включать:
         - Архитектуру: {historical_data['culture']['architecture']}
         - Одежду: {historical_data['culture']['clothing']}
         - Технологии и утварь: {historical_data['culture']['technology']}
-        - События: {', '.join(historical_data['events'])}
+        - События: {events_text}
 
         Стиль: реалистичный, детализированный, исторически достоверный.
         Обязательно включите характерные элементы эпохи, людей в исторических костюмах, архитектуру и предметы быта."""
