@@ -1,11 +1,35 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchForm = document.getElementById('searchForm');
     const historicalInfo = document.getElementById('historicalInfo');
-    const timeFromInput = document.getElementById('timeFrom');
-    const timeToInput = document.getElementById('timeTo');
+    const timePeriodInput = document.getElementById('timePeriod');
     const locationInput = document.getElementById('locationInput');
 
-    async function fetchHistoricalData(coords, timeFrom, timeTo) {
+    function parseTimePeriod(input) {
+        input = input.trim();
+
+        // Проверка формата DD.MM.YYYY
+        const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+        if (dateRegex.test(input)) {
+            const [_, day, month, year] = input.match(dateRegex);
+            return `${year}`;
+        }
+
+        // Проверка формата YYYY-YYYY
+        const periodRegex = /^(\d{1,4})-(\d{1,4})$/;
+        if (periodRegex.test(input)) {
+            return input;
+        }
+
+        // Проверка формата YYYY
+        const yearRegex = /^\d{1,4}$/;
+        if (yearRegex.test(input)) {
+            return input;
+        }
+
+        throw new Error('Неверный формат даты. Используйте: ГГГГ, ГГГГ-ГГГГ или ДД.ММ.ГГГГ');
+    }
+
+    async function fetchHistoricalData(coords, timePeriod) {
         try {
             const response = await fetch('/api/historical-data', {
                 method: 'POST',
@@ -15,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     latitude: coords[0],
                     longitude: coords[1],
-                    timePeriod: `${timeFrom}-${timeTo}`
+                    timePeriod: timePeriod
                 })
             });
 
@@ -35,10 +59,9 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
 
         const locationQuery = locationInput.value.trim();
-        const timeFrom = timeFromInput.value.trim();
-        const timeTo = timeToInput.value.trim();
+        const timePeriod = timePeriodInput.value.trim();
 
-        if (!timeFrom || !timeTo) {
+        if (!timePeriod) {
             alert('Пожалуйста, укажите временной период');
             return;
         }
@@ -49,8 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
         historicalInfo.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
 
         try {
-            let coords;
+            // Парсим и валидируем временной период
+            const parsedTimePeriod = parseTimePeriod(timePeriod);
 
+            let coords;
             if (locationQuery) {
                 try {
                     // Если введено место - ищем его координаты
@@ -66,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            const data = await fetchHistoricalData(coords, timeFrom, timeTo);
+            const data = await fetchHistoricalData(coords, parsedTimePeriod);
             displayHistoricalData(data);
         } catch (error) {
             historicalInfo.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
@@ -76,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Поиск места при нажатии Enter
+    // Поиск места при нажатии Enter в поле ввода места
     locationInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
