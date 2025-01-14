@@ -267,67 +267,63 @@ map.events.add('boundschange', function() {
 
 function updateMarkers() {
     // Очищаем текущие маркеры
-    historicalPoints.forEach(point => {
-        map.geoObjects.remove(point.placemark);
-    });
+    map.geoObjects.removeAll();
     historicalPoints = [];
 
-    Object.entries(currentClusters).forEach(([key, points]) => {
-        const avgLat = points.reduce((sum, p) => sum + p.latitude, 0) / points.length;
-        const avgLon = points.reduce((sum, p) => sum + p.longitude, 0) / points.length;
+    // Создаем ObjectManager для эффективного управления точками
+    const objectManager = new ymaps.ObjectManager({
+        clusterize: true,
+        gridSize: 32,
+        clusterDisableClickZoom: false,
+        clusterOpenBalloonOnClick: true,
+        clusterBalloonContentLayout: 'cluster#balloonCarousel',
+        clusterIconLayout: 'default#pieChart',
+        clusterIconPieChartRadius: 25,
+        clusterIconPieChartCoreRadius: 10,
+        clusterIconPieChartStrokeWidth: 3,
+        geoObjectOpenBalloonOnClick: false
+    });
 
-        if (points.length === 1) {
-            const point = points[0];
-            const placemark = new ymaps.Placemark(
-            [point.latitude, point.longitude],
-            {
+    map.geoObjects.add(objectManager);
+
+    // Преобразуем точки в формат ObjectManager
+    const objects = {
+        type: 'FeatureCollection',
+        features: []
+    };
+
+    Object.values(currentClusters).flat().forEach((point, index) => {
+        objects.features.push({
+            type: 'Feature',
+            id: index,
+            geometry: {
+                type: 'Point',
+                coordinates: [point.latitude, point.longitude]
+            },
+            properties: {
                 balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
-                balloonContentBody: `${point.response_data.description || ''}`,
+                balloonContentBody: point.response_data.description || '',
+                clusterCaption: point.response_data.territory,
                 hintContent: `${point.response_data.territory}, ${point.time_period}`
             },
-            {
+            options: {
                 preset: 'islands#nightCircleDotIcon',
-                iconImageSize: [4, 4],
-                iconImageOffset: [-2, -2],
-                zIndex: 1000
+                iconColor: '#0066ff'
             }
-        );
+        });
+    });
 
-            placemark.events.add('click', () => displayHistoricalData(point.response_data));
-            map.geoObjects.add(placemark);
-            historicalPoints.push({ placemark, data: point });
-        } else {
-            // Создаем кластерный маркер
-            const placemark = new ymaps.Placemark(
-                [avgLat, avgLon],
-                {
-                    balloonContentHeader: `${points.length} точек`,
-                    balloonContentBody: points.map(p => 
-                        `${p.response_data.territory}, ${p.time_period}`).join('<br>'),
-                    hintContent: `${points.length} исторических точек`
-                },
-                {
-                    preset: 'islands#blueCircleDotIconWithCaption',
-                    iconCaption: points.length.toString(),
-                    iconCaptionMaxWidth: '50',
-                    zIndex: 2000
-                }
+    // Добавляем обработчик клика на точки
+    objectManager.objects.events.add('click', (e) => {
+        const obj = objectManager.objects.getById(e.get('objectId'));
+        if (obj) {
+            displayHistoricalData(
+                currentClusters[Object.keys(currentClusters)[0]][0].response_data
             );
-
-            placemark.events.add('click', () => {
-                if (map.getZoom() < 14) {
-                    // Увеличиваем масштаб при клике на кластер
-                    map.setCenter([avgLat, avgLon], Math.min(map.getZoom() + 2, 14));
-                } else {
-                    // Показываем балун с информацией о точках
-                    placemark.balloon.open();
-                }
-            });
-
-            map.geoObjects.add(placemark);
-            historicalPoints.push({ placemark, data: points });
         }
     });
+
+    objectManager.add(objects);
 }
 
 updateMarkers();
