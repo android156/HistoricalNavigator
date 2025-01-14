@@ -124,9 +124,6 @@ ymaps.ready(function() {
     }
 });
 
-// Экспортируем функции для использования в main.js
-window.searchLocation = searchLocation;
-window.getCurrentMarkerPosition = getCurrentMarkerPosition;
 async function loadHistoricalPoints() {
     try {
         const response = await fetch('/api/historical-points');
@@ -189,3 +186,7 @@ historicalPoints = Object.entries(groupedPoints).flatMap(([coords, points]) => {
         console.error('Error loading historical points:', error);
     }
 }
+
+// Экспортируем функции для использования в main.js
+window.searchLocation = searchLocation;
+window.getCurrentMarkerPosition = getCurrentMarkerPosition;
