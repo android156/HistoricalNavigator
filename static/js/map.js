@@ -279,7 +279,7 @@ function updateMarkers() {
         if (points.length === 1) {
             const point = points[0];
             const placemark = new ymaps.Placemark(
-            [lat, lon],
+            [point.latitude, point.longitude],
             {
                 balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
                 balloonContentBody: `${point.response_data.description || ''}`,
