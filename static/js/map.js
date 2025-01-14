@@ -137,18 +137,49 @@ async function loadHistoricalPoints() {
             return;
         }
 
-        historicalPoints = data.map(point => {
-            const placemark = new ymaps.Placemark(
-                [point.latitude, point.longitude],
-                {
-                    balloonContentHeader: `Период: ${point.time_period}`,
-                    balloonContentBody: `Территория: ${point.response_data.territory}`,
-                    hintContent: point.time_period
-                },
-                {
-                    preset: 'islands#blueCircleDotIcon'
-                }
-            );
+        // Функция для распределения точек по спирали
+function calculateSpiralPosition(center, index, totalPoints) {
+    if (totalPoints <= 1) return center;
+    
+    const angle = index * (2 * Math.PI) / totalPoints;
+    const radius = 0.001 * Math.ceil(index / 6); // ~100m per spiral round
+    return [
+        center[0] + radius * Math.cos(angle),
+        center[1] + radius * Math.sin(angle)
+    ];
+}
+
+// Группируем точки по координатам
+const groupedPoints = {};
+data.forEach(point => {
+    const key = `${point.latitude},${point.longitude}`;
+    if (!groupedPoints[key]) {
+        groupedPoints[key] = [];
+    }
+    groupedPoints[key].push(point);
+});
+
+historicalPoints = Object.entries(groupedPoints).flatMap(([coords, points]) => {
+    return points.map((point, index) => {
+        const [baseLat, baseLon] = coords.split(',').map(Number);
+        const [lat, lon] = calculateSpiralPosition(
+            [baseLat, baseLon], 
+            index, 
+            points.length
+        );
+
+        const placemark = new ymaps.Placemark(
+            [lat, lon],
+            {
+                balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
+                balloonContentBody: `${point.response_data.description || ''}`,
+                hintContent: `${point.response_data.territory}, ${point.time_period}`
+            },
+            {
+                preset: 'islands#blueDotIcon',
+                iconImageSize: [8, 8]
+            }
+        );
 
             placemark.events.add('click', () => displayHistoricalData(point.response_data));
             map.geoObjects.add(placemark);
