@@ -229,38 +229,56 @@ async function loadHistoricalPoints() {
             return;
         }
 
-        // Функция для распределения точек по спирали
-function calculateSpiralPosition(center, index, totalPoints) {
-    if (totalPoints <= 1) return center;
-    
-    const angle = index * (2 * Math.PI) / totalPoints;
-    const radius = 0.002 * Math.ceil(index / 4); // Увеличенный радиус для лучшего распределения
-    return [
-        center[0] + radius * Math.cos(angle),
-        center[1] + radius * Math.sin(angle)
-    ];
-}
+        // Функция для кластеризации точек
+        function clusterPoints(points, zoom) {
+            const clusters = {};
+            const gridSize = 50 / Math.pow(2, zoom - 3); // Размер сетки уменьшается с увеличением зума
 
-// Группируем точки по координатам
-const groupedPoints = {};
-data.forEach(point => {
-    const key = `${point.latitude},${point.longitude}`;
-    if (!groupedPoints[key]) {
-        groupedPoints[key] = [];
-    }
-    groupedPoints[key].push(point);
+            points.forEach(point => {
+                const key = Math.floor(point.latitude / gridSize) + ',' + 
+                          Math.floor(point.longitude / gridSize);
+                if (!clusters[key]) {
+                    clusters[key] = [];
+                }
+                clusters[key].push(point);
+            });
+            return clusters;
+        }
+
+        // Функция для распределения точек по спирали
+        function calculateSpiralPosition(center, index, totalPoints) {
+            if (totalPoints <= 1) return center;
+            
+            const angle = index * (2 * Math.PI) / totalPoints;
+            const radius = 0.002 * Math.ceil(index / 4);
+            return [
+                center[0] + radius * Math.cos(angle),
+                center[1] + radius * Math.sin(angle)
+            ];
+        }
+
+let currentClusters = clusterPoints(data, map.getZoom());
+
+// Обработчик изменения масштаба
+map.events.add('boundschange', function() {
+    currentClusters = clusterPoints(data, map.getZoom());
+    updateMarkers();
 });
 
-historicalPoints = Object.entries(groupedPoints).flatMap(([coords, points]) => {
-    return points.map((point, index) => {
-        const [baseLat, baseLon] = coords.split(',').map(Number);
-        const [lat, lon] = calculateSpiralPosition(
-            [baseLat, baseLon], 
-            index, 
-            points.length
-        );
+function updateMarkers() {
+    // Очищаем текущие маркеры
+    historicalPoints.forEach(point => {
+        map.geoObjects.remove(point.placemark);
+    });
+    historicalPoints = [];
 
-        const placemark = new ymaps.Placemark(
+    Object.entries(currentClusters).forEach(([key, points]) => {
+        const avgLat = points.reduce((sum, p) => sum + p.latitude, 0) / points.length;
+        const avgLon = points.reduce((sum, p) => sum + p.longitude, 0) / points.length;
+
+        if (points.length === 1) {
+            const point = points[0];
+            const placemark = new ymaps.Placemark(
             [lat, lon],
             {
                 balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
@@ -271,15 +289,48 @@ historicalPoints = Object.entries(groupedPoints).flatMap(([coords, points]) => {
                 preset: 'islands#nightCircleDotIcon',
                 iconImageSize: [4, 4],
                 iconImageOffset: [-2, -2],
-                zIndex: 1000 + index // Добавляем zIndex для правильного наложения
+                zIndex: 1000
             }
         );
 
             placemark.events.add('click', () => displayHistoricalData(point.response_data));
             map.geoObjects.add(placemark);
-            return { placemark, data: point };
-        });
+            historicalPoints.push({ placemark, data: point });
+        } else {
+            // Создаем кластерный маркер
+            const placemark = new ymaps.Placemark(
+                [avgLat, avgLon],
+                {
+                    balloonContentHeader: `${points.length} точек`,
+                    balloonContentBody: points.map(p => 
+                        `${p.response_data.territory}, ${p.time_period}`).join('<br>'),
+                    hintContent: `${points.length} исторических точек`
+                },
+                {
+                    preset: 'islands#blueCircleDotIconWithCaption',
+                    iconCaption: points.length.toString(),
+                    iconCaptionMaxWidth: '50',
+                    zIndex: 2000
+                }
+            );
+
+            placemark.events.add('click', () => {
+                if (map.getZoom() < 14) {
+                    // Увеличиваем масштаб при клике на кластер
+                    map.setCenter([avgLat, avgLon], Math.min(map.getZoom() + 2, 14));
+                } else {
+                    // Показываем балун с информацией о точках
+                    placemark.balloon.open();
+                }
+            });
+            
+            map.geoObjects.add(placemark);
+            historicalPoints.push({ placemark, data: points });
+        }
     });
+}
+
+updateMarkers();
     } catch (error) {
         console.error('Error loading historical points:', error);
     }
