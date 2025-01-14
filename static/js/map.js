@@ -269,7 +269,8 @@ historicalPoints = Object.entries(groupedPoints).flatMap(([coords, points]) => {
             },
             {
                 preset: 'islands#blueDotIcon',
-                iconImageSize: [8, 8]
+                iconImageSize: [6, 6],
+                iconImageOffset: [-3, -3]
             }
         );
 

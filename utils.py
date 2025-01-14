@@ -123,8 +123,26 @@ def get_historical_data(latitude, longitude, time_period):
             historical_data
         )
 
-        # Добавляем URL изображения к данным
-        historical_data['image_url'] = image_url
+        # Сохраняем изображение локально
+        if image_url:
+            try:
+                import requests
+                import os
+                from datetime import datetime
+                
+                response = requests.get(image_url)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"historical_{timestamp}.jpg"
+                filepath = f"static/images/historical/{filename}"
+                
+                with open(filepath, 'wb') as f:
+                    f.write(response.content)
+                
+                # Обновляем URL на локальный путь
+                historical_data['image_url'] = f"/static/images/historical/{filename}"
+            except Exception as e:
+                logging.error(f"Error saving image locally: {str(e)}")
+                historical_data['image_url'] = image_url
 
         # Сохраняем точку в базу данных
         point = HistoricalPoint(
