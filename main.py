@@ -1,4 +1,5 @@
 from app import app
+from datetime import datetime
 from flask import render_template, jsonify, request
 from utils import get_historical_data, log_action
 import logging
@@ -15,8 +16,12 @@ def get_history():
         lng = data.get('longitude')
         time_period = data.get('timePeriod')
 
-        if not all([lat, lng, time_period]):
-            return jsonify({'error': 'Необходимо указать координаты и временной период'}), 400
+        # Set default values if not provided
+        if not all([lat, lng]):
+            # Default coordinates for Moscow
+            lat, lng = 55.7558, 37.6173
+        if not time_period:
+            time_period = str(datetime.now().year)
 
         log_action('historical_data_request', {
             'latitude': lat,

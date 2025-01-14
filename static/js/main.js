@@ -58,12 +58,18 @@ document.addEventListener('DOMContentLoaded', function() {
     searchForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const locationQuery = locationInput.value.trim();
-        const timePeriod = timePeriodInput.value.trim();
+        let locationQuery = locationInput.value.trim();
+        let timePeriod = timePeriodInput.value.trim();
 
+        // Set default values
+        if (!locationQuery) {
+            locationQuery = 'Москва';
+            locationInput.value = locationQuery;
+        }
         if (!timePeriod) {
-            alert('Пожалуйста, укажите временной период');
-            return;
+            const currentYear = new Date().getFullYear();
+            timePeriod = currentYear.toString();
+            timePeriodInput.value = timePeriod;
         }
 
         searchForm.classList.add('loading');
