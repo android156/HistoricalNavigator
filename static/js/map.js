@@ -54,11 +54,11 @@ function setMarkerAndGetAddress(coords) {
             const locality = firstGeoObject.getLocalities()[0] || 
                            firstGeoObject.getAdministrativeAreas()[0] || 
                            'Населенный пункт не найден';
-            
+
             // Build hierarchy from country to locality
             const addressParts = [country, ...adminAreas, locality].filter(Boolean);
             const fullAddress = addressParts.join(', ');
-            
+
             document.getElementById('locationInput').value = fullAddress;
         } else {
             document.getElementById('locationInput').value = 'Адрес не найден';
@@ -223,7 +223,7 @@ async function loadHistoricalPoints() {
     try {
         const response = await fetch('/api/historical-points');
         const data = await response.json();
-        
+
         if (!Array.isArray(data)) {
             console.error('Expected array of points, got:', data);
             return;
@@ -232,11 +232,11 @@ async function loadHistoricalPoints() {
         // Функция для кластеризации точек
         function clusterPoints(points, zoom) {
             const clusters = {};
-            const gridSize = 50 / Math.pow(2, zoom - 3); // Размер сетки уменьшается с увеличением зума
+            const gridSize = 0.01 / Math.pow(2, zoom - 8); // Уменьшенный размер сетки
 
             points.forEach(point => {
-                const key = Math.floor(point.latitude / gridSize) + ',' + 
-                          Math.floor(point.longitude / gridSize);
+                const key = Math.round(point.latitude / gridSize) + ',' + 
+                           Math.round(point.longitude / gridSize);
                 if (!clusters[key]) {
                     clusters[key] = [];
                 }
@@ -248,7 +248,7 @@ async function loadHistoricalPoints() {
         // Функция для распределения точек по спирали
         function calculateSpiralPosition(center, index, totalPoints) {
             if (totalPoints <= 1) return center;
-            
+
             const angle = index * (2 * Math.PI) / totalPoints;
             const radius = 0.002 * Math.ceil(index / 4);
             return [
@@ -323,7 +323,7 @@ function updateMarkers() {
                     placemark.balloon.open();
                 }
             });
-            
+
             map.geoObjects.add(placemark);
             historicalPoints.push({ placemark, data: points });
         }
