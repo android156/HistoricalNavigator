@@ -21,6 +21,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
+app.config["YANDEX_MAPS_API_KEY"] = os.environ.get("YANDEX_MAPS_API_KEY", "")
 
 # Initialize database
 db.init_app(app)
