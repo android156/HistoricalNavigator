@@ -59,12 +59,17 @@ function setMarkerAndGetAddress(coords) {
 }
 
 function searchLocation(query) {
-    ymaps.geocode(query).then(function (res) {
-        const firstGeoObject = res.geoObjects.get(0);
-        if (firstGeoObject) {
-            const coords = firstGeoObject.geometry.getCoordinates();
-            setMarkerAndGetAddress(coords);
-        }
+    return new Promise((resolve, reject) => {
+        ymaps.geocode(query).then(function (res) {
+            const firstGeoObject = res.geoObjects.get(0);
+            if (firstGeoObject) {
+                const coords = firstGeoObject.geometry.getCoordinates();
+                setMarkerAndGetAddress(coords);
+                resolve(coords);
+            } else {
+                reject(new Error('Место не найдено'));
+            }
+        }).catch(reject);
     });
 }
 

@@ -5,16 +5,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeToInput = document.getElementById('timeTo');
     const locationInput = document.getElementById('locationInput');
 
+    async function fetchHistoricalData(coords, timeFrom, timeTo) {
+        const response = await fetch('/api/historical-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                latitude: coords[0],
+                longitude: coords[1],
+                timePeriod: `${timeFrom}-${timeTo}`
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Не удалось получить исторические данные');
+        }
+        return data;
+    }
+
     // Обработка отправки формы
     searchForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const coords = getCurrentMarkerPosition();
-        if (!coords) {
-            alert('Пожалуйста, выберите точку на карте или введите место');
-            return;
-        }
-
+        const locationQuery = locationInput.value.trim();
         const timeFrom = timeFromInput.value.trim();
         const timeTo = timeToInput.value.trim();
 
@@ -29,25 +44,20 @@ document.addEventListener('DOMContentLoaded', function() {
         historicalInfo.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
 
         try {
-            const response = await fetch('/api/historical-data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    latitude: coords[0],
-                    longitude: coords[1],
-                    timePeriod: `${timeFrom}-${timeTo}`
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                displayHistoricalData(data);
+            let coords;
+            if (locationQuery) {
+                // Если введено место - ищем его координаты
+                coords = await searchLocation(locationQuery);
             } else {
-                throw new Error(data.error || 'Не удалось получить исторические данные');
+                // Иначе берем координаты текущего маркера
+                coords = getCurrentMarkerPosition();
+                if (!coords) {
+                    throw new Error('Пожалуйста, выберите точку на карте или введите место');
+                }
             }
+
+            const data = await fetchHistoricalData(coords, timeFrom, timeTo);
+            displayHistoricalData(data);
         } catch (error) {
             historicalInfo.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
         } finally {
@@ -56,14 +66,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Поиск места при вводе и нажатии Enter
+    // Поиск места при нажатии Enter
     locationInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
-            const query = this.value.trim();
-            if (query) {
-                searchLocation(query);
-            }
+            searchForm.dispatchEvent(new Event('submit'));
         }
     });
 
