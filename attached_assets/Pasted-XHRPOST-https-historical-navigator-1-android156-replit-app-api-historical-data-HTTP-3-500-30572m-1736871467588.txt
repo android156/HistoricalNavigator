@@ -1,0 +1,67 @@
+XHRPOST
+https://historical-navigator-1-android156.replit.app/api/historical-data
+[HTTP/3 500  30572ms]
+
+GET
+https://api-maps.yandex.ru/services/search//v2/?callback=id_1736871260939705310474&text=55.755864,37.617698&format=json&rspn=0&lang=ru_RU&token=c4a6a58cb4229682e5f1e2a7c0c37957&type=geo&properties=addressdetails&geocoder_sco=latlong&origin=jsapi2Geocoder&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd
+[HTTP/2 200  193ms]
+
+GET
+https://api-maps.yandex.ru/services/coverage/v2/?l=map&ll=37.61769800,55.75586400&z=8&lang=ru_RU&callback=jsonp_yandex_coverage__l_map_ll_37_61769800_55_75586400_z_8_lang_ru_RU
+[HTTP/2 200  159ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=153&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/2 200  205ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=154&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/2 200  127ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=155&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/2 200  202ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=156&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/2 200  141ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=154&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/1.1 200 OK 0ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=156&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/1.1 200 OK 0ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=155&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/1.1 200 OK 0ms]
+
+GET
+https://core-renderer-tiles.maps.yandex.net/tiles?l=map&v=25.01.13-2-b250110114600&x=153&y=78&z=8&scale=1&lang=ru_RU&apikey=ed19b259-9fd7-4bdc-ad2f-15fc3dcc9ccd&ads=enabled
+[HTTP/1.1 200 OK 0ms]
+
+Invalid JSON response: <html>
+  <head>
+    <title>Internal Server Error</title>
+  </head>
+  <body>
+    <h1><p>Internal Server Error</p></h1>
+    
+  </body>
+</html>
+main.js:51:25
+Ошибка при получении исторических данных: Error: Некорректный ответ сервера: <html>
+  <head>
+    <title>Internal Server Error</title>
+  </head>
+  <body>
+    <h1><p>Internal Server Error</p></h1>
+    
+  </body>
+</html>
+    fetchHistoricalData https://historical-navigator-1-android156.replit.app/static/js/main.js:52
+    async* https://historical-navigator-1-android156.replit.app/static/js/main.js:108
+    async* https://historical-navigator-1-android156.replit.app/static/js/main.js:66
+    EventListener.handleEvent* https://historical-navigator-1-android156.replit.app/static/js/main.js:1
