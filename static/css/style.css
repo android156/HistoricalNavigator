@@ -18,6 +18,27 @@
     border-radius: 0.25rem;
 }
 
+.event-year {
+    font-weight: bold;
+    color: var(--bs-primary);
+    margin-right: 0.5rem;
+}
+
+.event-location {
+    color: var(--bs-info);
+    margin-right: 0.5rem;
+}
+
+.event-link {
+    color: var(--bs-link-color);
+    text-decoration: none;
+}
+
+.event-link:hover {
+    text-decoration: underline;
+    color: var(--bs-link-hover-color);
+}
+
 .historical-image {
     margin: 1.5rem 0;
     text-align: center;

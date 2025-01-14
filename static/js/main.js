@@ -123,13 +123,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 ` : ''}
 
                 <div class="mb-4">
-                    <h6>События:</h6>
+                    <h6>Общие события:</h6>
                     <div class="ms-3">
                         ${data.events.map(event => `
-                            <div class="historical-event">${event}</div>
+                            <div class="historical-event">
+                                <span class="event-year">${event.year}</span>
+                                ${event.wiki_url ? 
+                                    `<a href="${event.wiki_url}" target="_blank" class="event-link">${event.text}</a>` :
+                                    `<span>${event.text}</span>`
+                                }
+                            </div>
                         `).join('')}
                     </div>
                 </div>
+
+                ${data.local_events && data.local_events.length > 0 ? `
+                    <div class="mb-4">
+                        <h6>Местные события:</h6>
+                        <div class="ms-3">
+                            ${data.local_events.map(event => `
+                                <div class="historical-event">
+                                    <span class="event-year">${event.year}</span>
+                                    <strong class="event-location">${event.location}:</strong>
+                                    ${event.wiki_url ? 
+                                        `<a href="${event.wiki_url}" target="_blank" class="event-link">${event.text}</a>` :
+                                        `<span>${event.text}</span>`
+                                    }
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
 
                 <div class="mb-4">
                     <h6>Культура и быт:</h6>
