@@ -45,10 +45,17 @@ function setMarkerAndGetAddress(coords) {
     ymaps.geocode(coords).then(function (res) {
         const firstGeoObject = res.geoObjects.get(0);
         if (firstGeoObject) {
+            const country = firstGeoObject.getCountry() || '';
+            const adminAreas = firstGeoObject.getAdministrativeAreas() || [];
             const locality = firstGeoObject.getLocalities()[0] || 
                            firstGeoObject.getAdministrativeAreas()[0] || 
                            'Населенный пункт не найден';
-            document.getElementById('locationInput').value = locality;
+            
+            // Build hierarchy from country to locality
+            const addressParts = [country, ...adminAreas, locality].filter(Boolean);
+            const fullAddress = addressParts.join(', ');
+            
+            document.getElementById('locationInput').value = fullAddress;
         } else {
             document.getElementById('locationInput').value = 'Адрес не найден';
         }
