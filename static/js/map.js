@@ -44,8 +44,14 @@ function setMarkerAndGetAddress(coords) {
     // Get address for coordinates
     ymaps.geocode(coords).then(function (res) {
         const firstGeoObject = res.geoObjects.get(0);
-        const address = firstGeoObject ? firstGeoObject.getAddressLine() : 'Адрес не найден';
-        document.getElementById('locationInput').value = address;
+        if (firstGeoObject) {
+            const locality = firstGeoObject.getLocalities()[0] || 
+                           firstGeoObject.getAdministrativeAreas()[0] || 
+                           'Населенный пункт не найден';
+            document.getElementById('locationInput').value = locality;
+        } else {
+            document.getElementById('locationInput').value = 'Адрес не найден';
+        }
     });
 
     // Handle marker drag
