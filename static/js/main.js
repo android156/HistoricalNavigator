@@ -6,23 +6,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const locationInput = document.getElementById('locationInput');
 
     async function fetchHistoricalData(coords, timeFrom, timeTo) {
-        const response = await fetch('/api/historical-data', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                latitude: coords[0],
-                longitude: coords[1],
-                timePeriod: `${timeFrom}-${timeTo}`
-            })
-        });
+        try {
+            const response = await fetch('/api/historical-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    latitude: coords[0],
+                    longitude: coords[1],
+                    timePeriod: `${timeFrom}-${timeTo}`
+                })
+            });
 
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Не удалось получить исторические данные');
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || data.details || 'Не удалось получить исторические данные');
+            }
+            return data;
+        } catch (error) {
+            console.error('Ошибка при получении исторических данных:', error);
+            throw error;
         }
-        return data;
     }
 
     // Обработка отправки формы
@@ -45,9 +50,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             let coords;
+
             if (locationQuery) {
-                // Если введено место - ищем его координаты
-                coords = await searchLocation(locationQuery);
+                try {
+                    // Если введено место - ищем его координаты
+                    coords = await searchLocation(locationQuery);
+                } catch (error) {
+                    throw new Error(`Ошибка поиска места: ${error.message}`);
+                }
             } else {
                 // Иначе берем координаты текущего маркера
                 coords = getCurrentMarkerPosition();

@@ -60,6 +60,11 @@ function setMarkerAndGetAddress(coords) {
 
 function searchLocation(query) {
     return new Promise((resolve, reject) => {
+        if (!query) {
+            reject(new Error('Введите название места'));
+            return;
+        }
+
         ymaps.geocode(query).then(function (res) {
             const firstGeoObject = res.geoObjects.get(0);
             if (firstGeoObject) {
@@ -69,7 +74,10 @@ function searchLocation(query) {
             } else {
                 reject(new Error('Место не найдено'));
             }
-        }).catch(reject);
+        }).catch(function(error) {
+            console.error('Ошибка геокодирования:', error);
+            reject(new Error('Ошибка при поиске места'));
+        });
     });
 }
 
@@ -90,7 +98,14 @@ function logMapAction(type, data) {
     }).catch(console.error);
 }
 
-ymaps.ready(initMap);
+// Initialize map when API is ready
+ymaps.ready(function() {
+    try {
+        initMap();
+    } catch (error) {
+        console.error('Ошибка инициализации карты:', error);
+    }
+});
 
 // Экспортируем функции для использования в main.js
 window.searchLocation = searchLocation;

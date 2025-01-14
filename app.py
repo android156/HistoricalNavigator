@@ -21,7 +21,15 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
-app.config["YANDEX_MAPS_API_KEY"] = os.environ.get("YANDEX_MAPS_API_KEY", "")
+
+# Get Yandex Maps API key from environment
+YANDEX_MAPS_API_KEY = os.environ.get("YANDEX_MAPS_API_KEY")
+if not YANDEX_MAPS_API_KEY:
+    logging.error("YANDEX_MAPS_API_KEY not found in environment variables")
+    raise ValueError("YANDEX_MAPS_API_KEY is required")
+
+app.config["YANDEX_MAPS_API_KEY"] = YANDEX_MAPS_API_KEY
+logging.info("Yandex Maps API key configured successfully")
 
 # Initialize database
 db.init_app(app)

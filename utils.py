@@ -10,6 +10,10 @@ from museum_api import museum_client
 # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
 # do not change this unless explicitly requested by the user
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    logging.error("OPENAI_API_KEY not found in environment variables")
+    raise ValueError("OPENAI_API_KEY is required")
+
 openai = OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_historical_image(territory, time_period, historical_data):
@@ -25,6 +29,7 @@ def generate_historical_image(territory, time_period, historical_data):
         Стиль: реалистичный, детализированный, исторически достоверный.
         Обязательно включите характерные элементы эпохи, людей в исторических костюмах, архитектуру и предметы быта."""
 
+        logging.info(f"Generating image for {territory} in period {time_period}")
         response = openai.images.generate(
             model="dall-e-3",
             prompt=prompt,
@@ -53,6 +58,8 @@ def log_action(action_type, action_data):
 
 def get_historical_data(latitude, longitude, time_period):
     try:
+        logging.info(f"Getting historical data for coordinates ({latitude}, {longitude}) and period {time_period}")
+
         prompt = f"""Учитывая координаты ({latitude}, {longitude}) и временной период {time_period}, 
         предоставьте историческую информацию в формате JSON со следующей структурой на русском языке:
         {{
@@ -79,13 +86,19 @@ def get_historical_data(latitude, longitude, time_period):
         )
 
         historical_data = json.loads(response.choices[0].message.content)
+        logging.info("Successfully received historical data from OpenAI")
 
-        # Получаем музейные артефакты
-        artifacts = museum_client.search_artifacts(
-            historical_data['territory'],
-            time_period
-        )
-        historical_data['museum_artifacts'] = [artifact.to_dict() for artifact in artifacts]
+        try:
+            # Получаем музейные артефакты
+            artifacts = museum_client.search_artifacts(
+                historical_data['territory'],
+                time_period
+            )
+            historical_data['museum_artifacts'] = [artifact.to_dict() for artifact in artifacts]
+            logging.info(f"Successfully retrieved {len(artifacts)} museum artifacts")
+        except Exception as e:
+            logging.error(f"Error getting museum artifacts: {str(e)}")
+            historical_data['museum_artifacts'] = []
 
         # Генерируем изображение на основе полученных данных
         image_url = generate_historical_image(
@@ -106,8 +119,9 @@ def get_historical_data(latitude, longitude, time_period):
         )
         db.session.add(query)
         db.session.commit()
+        logging.info("Successfully stored query in database")
 
         return historical_data
     except Exception as e:
-        logging.error(f"Error getting historical data: {str(e)}")
-        raise
+        logging.error(f"Error getting historical data: {str(e)}", exc_info=True)
+        raise Exception(f"Failed to retrieve historical data: {str(e)}")
