@@ -3,6 +3,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const historicalInfo = document.getElementById('historicalInfo');
     const timeFromInput = document.getElementById('timeFrom');
     const timeToInput = document.getElementById('timeTo');
+    const locationInput = document.getElementById('locationInput');
+    const searchLocationButton = document.getElementById('searchLocation');
+
+    // Обработка поиска места
+    searchLocationButton.addEventListener('click', function() {
+        const query = locationInput.value.trim();
+        if (query) {
+            searchLocation(query);
+        }
+    });
+
+    // Поиск при нажатии Enter в поле ввода места
+    locationInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const query = this.value.trim();
+            if (query) {
+                searchLocation(query);
+            }
+        }
+    });
 
     searchButton.addEventListener('click', async function() {
         const coords = getCurrentMarkerPosition();
@@ -13,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const timeFrom = timeFromInput.value.trim();
         const timeTo = timeToInput.value.trim();
-        
+
         if (!timeFrom || !timeTo) {
             alert('Пожалуйста, укажите временной период');
             return;
@@ -36,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             const data = await response.json();
-            
+
             if (response.ok) {
                 displayHistoricalData(data);
             } else {
@@ -53,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const html = `
             <div class="historical-data">
                 <h6 class="mb-3">Территория: ${data.territory}</h6>
-                
+
                 <div class="mb-3">
                     <h6>События:</h6>
                     <ul class="list-unstyled">
