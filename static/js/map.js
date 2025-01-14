@@ -182,6 +182,7 @@ historicalPoints = Object.entries(groupedPoints).flatMap(([coords, points]) => {
             map.geoObjects.add(placemark);
             return { placemark, data: point };
         });
+    });
     } catch (error) {
         console.error('Error loading historical points:', error);
     }
