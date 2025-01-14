@@ -60,8 +60,14 @@ def log_map_action():
 @app.route('/api/historical-points', methods=['GET'])
 def get_historical_points():
     try:
-        points = HistoricalPoint.query.all() # Assuming SQLAlchemy or similar ORM
-        return jsonify([{'latitude': p.latitude, 'longitude': p.longitude, 'data': p.data} for p in points])
+        points = HistoricalPoint.query.all()
+        return jsonify([{
+            'latitude': p.latitude,
+            'longitude': p.longitude,
+            'time_period': p.time_period,
+            'response_data': p.response_data,
+            'image_url': p.image_url
+        } for p in points])
     except Exception as e:
         logging.error(f"Error retrieving historical points: {str(e)}", exc_info=True)
         return jsonify({'error': 'Не удалось получить исторические точки'}), 500

@@ -130,9 +130,14 @@ window.getCurrentMarkerPosition = getCurrentMarkerPosition;
 async function loadHistoricalPoints() {
     try {
         const response = await fetch('/api/historical-points');
-        const points = await response.json();
+        const data = await response.json();
         
-        historicalPoints = points.map(point => {
+        if (!Array.isArray(data)) {
+            console.error('Expected array of points, got:', data);
+            return;
+        }
+
+        historicalPoints = data.map(point => {
             const placemark = new ymaps.Placemark(
                 [point.latitude, point.longitude],
                 {
@@ -145,7 +150,7 @@ async function loadHistoricalPoints() {
                 }
             );
 
-            placemark.events.add('click', () => showHistoricalData(point.response_data));
+            placemark.events.add('click', () => displayHistoricalData(point.response_data));
             map.geoObjects.add(placemark);
             return { placemark, data: point };
         });
