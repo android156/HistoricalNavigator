@@ -19,38 +19,40 @@ def log_action(action_type, action_data):
         )
         db.session.add(map_action)
         db.session.commit()
-        
+
         logging.info(f"Action logged: {action_type} - {json.dumps(action_data)}")
     except Exception as e:
         logging.error(f"Failed to log action: {str(e)}")
 
 def get_historical_data(latitude, longitude, time_period):
     try:
-        prompt = f"""Given the coordinates ({latitude}, {longitude}) and time period {time_period}, 
-        provide historical information in JSON format with the following structure:
+        prompt = f"""Учитывая координаты ({latitude}, {longitude}) и временной период {time_period}, 
+        предоставьте историческую информацию в формате JSON со следующей структурой на русском языке:
         {{
-            "territory": "name of the historical territory/state",
-            "events": ["list of major historical events"],
+            "territory": "название исторической территории/государства",
+            "events": ["список основных исторических событий"],
             "culture": {{
-                "architecture": "description",
-                "clothing": "description",
-                "technology": "description"
+                "architecture": "описание архитектуры",
+                "clothing": "описание одежды",
+                "technology": "описание технологий"
             }},
-            "rulers": ["list of rulers during this period"],
-            "description": "general description of the period"
-        }}"""
+            "rulers": ["список правителей этого периода"],
+            "description": "общее описание периода"
+        }}
+
+        Пожалуйста, предоставьте всю информацию на русском языке. Используйте исторически корректные русские названия для мест, событий и имён правителей."""
 
         response = openai.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a historical data expert."},
+                {"role": "system", "content": "Вы - эксперт по истории. Предоставляйте информацию на русском языке, используя исторически корректную терминологию."},
                 {"role": "user", "content": prompt}
             ],
             response_format={"type": "json_object"}
         )
 
         historical_data = json.loads(response.choices[0].message.content)
-        
+
         # Store query in database
         query = HistoricalQuery(
             latitude=latitude,
@@ -60,7 +62,7 @@ def get_historical_data(latitude, longitude, time_period):
         )
         db.session.add(query)
         db.session.commit()
-        
+
         return historical_data
     except Exception as e:
         logging.error(f"Error getting historical data: {str(e)}")
