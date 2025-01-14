@@ -234,7 +234,7 @@ function calculateSpiralPosition(center, index, totalPoints) {
     if (totalPoints <= 1) return center;
     
     const angle = index * (2 * Math.PI) / totalPoints;
-    const radius = 0.001 * Math.ceil(index / 6); // ~100m per spiral round
+    const radius = 0.002 * Math.ceil(index / 4); // Увеличенный радиус для лучшего распределения
     return [
         center[0] + radius * Math.cos(angle),
         center[1] + radius * Math.sin(angle)
@@ -268,9 +268,10 @@ historicalPoints = Object.entries(groupedPoints).flatMap(([coords, points]) => {
                 hintContent: `${point.response_data.territory}, ${point.time_period}`
             },
             {
-                preset: 'islands#blueDotIcon',
-                iconImageSize: [6, 6],
-                iconImageOffset: [-3, -3]
+                preset: 'islands#nightCircleDotIcon',
+                iconImageSize: [4, 4],
+                iconImageOffset: [-2, -2],
+                zIndex: 1000 + index // Добавляем zIndex для правильного наложения
             }
         );
 
