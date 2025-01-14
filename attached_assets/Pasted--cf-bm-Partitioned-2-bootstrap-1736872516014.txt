@@ -1,0 +1,60 @@
+Куки «__cf_bm» была отклонена, так как является чужой и не имеет атрибута «Partitioned». 2 bootstrap-agent-dark-theme.min.css
+Объект Components устарел. Скоро он будет удалён. 9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev
+Error loading historical points: ReferenceError: lat is not defined
+    updateMarkers https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:282
+    updateMarkers https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:275
+    loadHistoricalPoints https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:333
+map.js:335:17
+Uncaught ReferenceError: lat is not defined
+    updateMarkers https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:282
+    updateMarkers https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:275
+    loadHistoricalPoints https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:265
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    _onActionChange https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:619
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    _applyBounds https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:595
+    _onActionEnd https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:595
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    end https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:592
+    end https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:594
+    _timeoutID https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:4
+map.js:282:14
+Uncaught Error: map.action.Continuous: ticking while inactive. browser:Firefox behavior:scrollZoom
+    tick https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:594
+    tick https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:4
+    _tick https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:24
+    _onWheel https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:24
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:151
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    _onDomEvent https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:852
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    _onMouseEvent https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:145
+2 full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:594:378
+Uncaught ReferenceError: lat is not defined
+    updateMarkers https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:282
+    updateMarkers https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:275
+    loadHistoricalPoints https://9bb32244-e095-4684-a6ad-6be1a729d569-00-ims7hgn1alf9.worf.replit.dev/static/js/map.js:265
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    _onContainerSizeChange https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:619
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:150
+    _positionLayout https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:607
+    fitToViewport https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:607
+    _onWindowResize https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:607
+    _callListeners https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    fire https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:149
+    u https://yastatic.net/s3/front-maps-static/maps-front-jsapi-v2-1/2.1.79-15552685/build/release/full-a1bd86f040a06008a690d7eb2e2a507353a6a6e3.js:128
