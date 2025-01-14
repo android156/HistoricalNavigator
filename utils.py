@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-from models import MapAction, HistoricalQuery
+from models import MapAction, HistoricalQuery, HistoricalPoint # Added HistoricalPoint import
 from app import db
 import os
 from openai import OpenAI
@@ -125,16 +125,17 @@ def get_historical_data(latitude, longitude, time_period):
         # Добавляем URL изображения к данным
         historical_data['image_url'] = image_url
 
-        # Store query in database
-        query = HistoricalQuery(
+        # Сохраняем точку в базу данных
+        point = HistoricalPoint(
             latitude=latitude,
             longitude=longitude,
             time_period=time_period,
-            response_data=historical_data
+            response_data=historical_data,
+            image_url=image_url
         )
-        db.session.add(query)
+        db.session.add(point)
         db.session.commit()
-        logging.info("Successfully stored query in database")
+        logging.info("Successfully stored point in database")
 
         return historical_data
     except Exception as e:

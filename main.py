@@ -3,6 +3,8 @@ from datetime import datetime
 from flask import render_template, jsonify, request
 from utils import get_historical_data, log_action
 import logging
+from models import MapAction, HistoricalQuery, HistoricalPoint # Added import for HistoricalPoint
+
 
 @app.route('/')
 def index():
@@ -54,6 +56,16 @@ def log_map_action():
     except Exception as e:
         logging.error(f"Error logging action: {str(e)}", exc_info=True)
         return jsonify({'error': 'Не удалось записать действие'}), 500
+
+@app.route('/api/historical-points', methods=['GET'])
+def get_historical_points():
+    try:
+        points = HistoricalPoint.query.all() # Assuming SQLAlchemy or similar ORM
+        return jsonify([{'latitude': p.latitude, 'longitude': p.longitude, 'data': p.data} for p in points])
+    except Exception as e:
+        logging.error(f"Error retrieving historical points: {str(e)}", exc_info=True)
+        return jsonify({'error': 'Не удалось получить исторические точки'}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

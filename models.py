@@ -7,6 +7,15 @@ class MapAction(db.Model):
     action_data = db.Column(db.JSON)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+class HistoricalPoint(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    time_period = db.Column(db.String(100), nullable=False)
+    response_data = db.Column(db.JSON)
+    image_url = db.Column(db.String(500))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 class HistoricalQuery(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     latitude = db.Column(db.Float, nullable=False)

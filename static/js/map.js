@@ -1,12 +1,16 @@
 let map;
 let marker;
 
+let historicalPoints = [];
+
 function initMap() {
     map = new ymaps.Map('map', {
         center: [55.76, 37.64],
         zoom: 7,
         controls: ['zoomControl']
     });
+
+    loadHistoricalPoints();
 
     // Handle clicks on map
     map.events.add('click', function (e) {
@@ -123,3 +127,29 @@ ymaps.ready(function() {
 // Экспортируем функции для использования в main.js
 window.searchLocation = searchLocation;
 window.getCurrentMarkerPosition = getCurrentMarkerPosition;
+async function loadHistoricalPoints() {
+    try {
+        const response = await fetch('/api/historical-points');
+        const points = await response.json();
+        
+        historicalPoints = points.map(point => {
+            const placemark = new ymaps.Placemark(
+                [point.latitude, point.longitude],
+                {
+                    balloonContentHeader: `Период: ${point.time_period}`,
+                    balloonContentBody: `Территория: ${point.response_data.territory}`,
+                    hintContent: point.time_period
+                },
+                {
+                    preset: 'islands#blueCircleDotIcon'
+                }
+            );
+
+            placemark.events.add('click', () => showHistoricalData(point.response_data));
+            map.geoObjects.add(placemark);
+            return { placemark, data: point };
+        });
+    } catch (error) {
+        console.error('Error loading historical points:', error);
+    }
+}
