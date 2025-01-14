@@ -43,7 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            const data = await response.json();
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Invalid JSON response:', text);
+                throw new Error('Некорректный ответ сервера: ' + text);
+            }
+
             if (!response.ok) {
                 throw new Error(data.error || data.details || 'Не удалось получить исторические данные');
             }
