@@ -1,3 +1,4 @@
+import os
 from app import app
 from datetime import datetime
 from flask import render_template, jsonify, request
@@ -85,5 +86,5 @@ def get_historical_points():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 80))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
