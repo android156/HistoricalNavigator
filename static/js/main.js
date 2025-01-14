@@ -114,6 +114,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
+                ${data.museum_artifacts && data.museum_artifacts.length > 0 ? `
+                    <div class="mb-4">
+                        <h6>Музейные артефакты:</h6>
+                        <div class="row">
+                            ${data.museum_artifacts.map(artifact => `
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        ${artifact.image_url ? `
+                                            <img src="${artifact.image_url}" class="card-img-top" alt="${artifact.title}">
+                                        ` : ''}
+                                        <div class="card-body">
+                                            <h6 class="card-title">${artifact.title}</h6>
+                                            <p class="card-text">${artifact.description}</p>
+                                            <p class="text-muted">Источник: ${artifact.source_museum}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
                 <div class="mt-4">
                     <p class="text-muted">${data.description}</p>
                 </div>

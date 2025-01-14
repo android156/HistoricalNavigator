@@ -5,6 +5,7 @@ from models import MapAction, HistoricalQuery
 from app import db
 import os
 from openai import OpenAI
+from museum_api import museum_client
 
 # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
 # do not change this unless explicitly requested by the user
@@ -78,6 +79,13 @@ def get_historical_data(latitude, longitude, time_period):
         )
 
         historical_data = json.loads(response.choices[0].message.content)
+
+        # Получаем музейные артефакты
+        artifacts = museum_client.search_artifacts(
+            historical_data['territory'],
+            time_period
+        )
+        historical_data['museum_artifacts'] = [artifact.to_dict() for artifact in artifacts]
 
         # Генерируем изображение на основе полученных данных
         image_url = generate_historical_image(

@@ -14,3 +14,25 @@ class HistoricalQuery(db.Model):
     time_period = db.Column(db.String(100), nullable=False)
     response_data = db.Column(db.JSON)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+class MuseumArtifact(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    museum_id = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    period = db.Column(db.String(100))
+    location = db.Column(db.String(200))
+    image_url = db.Column(db.String(500))
+    source_museum = db.Column(db.String(200), nullable=False)
+    extra_data = db.Column(db.JSON)  # Переименовали metadata в extra_data
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'title': self.title,
+            'description': self.description,
+            'period': self.period,
+            'location': self.location,
+            'image_url': self.image_url,
+            'source_museum': self.source_museum
+        }
