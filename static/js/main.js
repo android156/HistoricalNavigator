@@ -1,33 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const searchButton = document.getElementById('searchButton');
+    const searchForm = document.getElementById('searchForm');
     const historicalInfo = document.getElementById('historicalInfo');
     const timeFromInput = document.getElementById('timeFrom');
     const timeToInput = document.getElementById('timeTo');
     const locationInput = document.getElementById('locationInput');
-    const searchLocationButton = document.getElementById('searchLocation');
 
-    // Обработка поиска места
-    searchLocationButton.addEventListener('click', function() {
-        const query = locationInput.value.trim();
-        if (query) {
-            searchLocation(query);
-        }
-    });
+    // Обработка отправки формы
+    searchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-    // Поиск при нажатии Enter в поле ввода места
-    locationInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            const query = this.value.trim();
-            if (query) {
-                searchLocation(query);
-            }
-        }
-    });
-
-    searchButton.addEventListener('click', async function() {
         const coords = getCurrentMarkerPosition();
         if (!coords) {
-            alert('Пожалуйста, выберите точку на карте');
+            alert('Пожалуйста, выберите точку на карте или введите место');
             return;
         }
 
@@ -39,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        searchForm.classList.add('loading');
+        const searchButton = searchForm.querySelector('button[type="submit"]');
         searchButton.disabled = true;
         historicalInfo.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
 
@@ -60,31 +46,43 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 displayHistoricalData(data);
             } else {
-                throw new Error(data.error || 'Failed to fetch historical data');
+                throw new Error(data.error || 'Не удалось получить исторические данные');
             }
         } catch (error) {
             historicalInfo.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
         } finally {
+            searchForm.classList.remove('loading');
             searchButton.disabled = false;
+        }
+    });
+
+    // Поиск места при вводе и нажатии Enter
+    locationInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = this.value.trim();
+            if (query) {
+                searchLocation(query);
+            }
         }
     });
 
     function displayHistoricalData(data) {
         const html = `
             <div class="historical-data">
-                <h6 class="mb-3">Территория: ${data.territory}</h6>
+                <h5 class="mb-4">Территория: ${data.territory}</h5>
 
-                <div class="mb-3">
+                <div class="mb-4">
                     <h6>События:</h6>
-                    <ul class="list-unstyled">
+                    <div class="ms-3">
                         ${data.events.map(event => `
-                            <li class="historical-event">${event}</li>
+                            <div class="historical-event">${event}</div>
                         `).join('')}
-                    </ul>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <h6>Культура:</h6>
+                <div class="mb-4">
+                    <h6>Культура и быт:</h6>
                     <div class="ms-3">
                         <p><strong>Архитектура:</strong> ${data.culture.architecture}</p>
                         <p><strong>Одежда:</strong> ${data.culture.clothing}</p>
@@ -92,16 +90,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-4">
                     <h6>Правители:</h6>
-                    <ul class="list-unstyled">
+                    <div class="ms-3">
                         ${data.rulers.map(ruler => `
-                            <li class="ms-3">• ${ruler}</li>
+                            <div class="mb-2">• ${ruler}</div>
                         `).join('')}
-                    </ul>
+                    </div>
                 </div>
 
-                <div class="mt-3">
+                <div class="mt-4">
                     <p class="text-muted">${data.description}</p>
                 </div>
             </div>

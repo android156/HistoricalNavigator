@@ -1,6 +1,5 @@
 let map;
 let marker;
-let searchControl;
 
 function initMap() {
     map = new ymaps.Map('map', {
@@ -8,14 +7,6 @@ function initMap() {
         zoom: 7,
         controls: ['zoomControl']
     });
-
-    // Создаём экземпляр поискового контрола
-    searchControl = new ymaps.control.SearchControl({
-        options: {
-            noPlacemark: true // Не добавляем метку при поиске
-        }
-    });
-    map.controls.add(searchControl);
 
     // Handle clicks on map
     map.events.add('click', function (e) {
@@ -44,6 +35,7 @@ function setMarkerAndGetAddress(coords) {
     });
 
     map.geoObjects.add(marker);
+    map.setCenter(coords);
 
     logMapAction('marker_placed', {
         coordinates: coords
@@ -67,11 +59,10 @@ function setMarkerAndGetAddress(coords) {
 }
 
 function searchLocation(query) {
-    searchControl.search(query).then(function () {
-        const results = searchControl.getResultsArray();
-        if (results && results.length > 0) {
-            const coords = results[0].geometry.getCoordinates();
-            map.setCenter(coords);
+    ymaps.geocode(query).then(function (res) {
+        const firstGeoObject = res.geoObjects.get(0);
+        if (firstGeoObject) {
+            const coords = firstGeoObject.geometry.getCoordinates();
             setMarkerAndGetAddress(coords);
         }
     });
@@ -96,5 +87,6 @@ function logMapAction(type, data) {
 
 ymaps.ready(initMap);
 
-// Экспортируем функцию для использования в main.js
+// Экспортируем функции для использования в main.js
 window.searchLocation = searchLocation;
+window.getCurrentMarkerPosition = getCurrentMarkerPosition;
