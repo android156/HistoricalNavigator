@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div id="map" style="width: 100%; height: 500px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Временной период</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="timeFrom" class="form-label">От:</label>
+                    <input type="text" class="form-control" id="timeFrom" placeholder="например: 1800">
+                </div>
+                <div class="mb-3">
+                    <label for="timeTo" class="form-label">До:</label>
+                    <input type="text" class="form-control" id="timeTo" placeholder="например: 1825">
+                </div>
+                <button id="searchButton" class="btn btn-primary w-100">Найти</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Историческая информация</h5>
+            </div>
+            <div class="card-body">
+                <div id="historicalInfo">
+                    <p class="text-muted">Выберите точку на карте и временной период для получения информации</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}
