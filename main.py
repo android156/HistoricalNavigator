@@ -14,17 +14,22 @@ def index():
 def get_history():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Отсутствуют данные запроса'}), 400
+            
         lat = data.get('latitude')
         lng = data.get('longitude')
         time_period = data.get('timePeriod')
 
-        # Set default values if not provided
-        if not all([lat, lng]):
-            # Default coordinates for Moscow
-            lat, lng = 55.7558, 37.6173
+        # Validate input data
+        if not isinstance(lat, (int, float)) or not isinstance(lng, (int, float)):
+            return jsonify({'error': 'Некорректные координаты'}), 400
+
         if not time_period:
             time_period = str(datetime.now().year)
 
+        logging.info(f"Processing request for coordinates ({lat}, {lng}) and period {time_period}")
+        
         log_action('historical_data_request', {
             'latitude': lat,
             'longitude': lng,
@@ -32,7 +37,13 @@ def get_history():
         })
 
         historical_info = get_historical_data(lat, lng, time_period)
+        if not historical_info:
+            return jsonify({'error': 'Данные не найдены'}), 404
+            
         return jsonify(historical_info)
+    except ValueError as ve:
+        logging.error(f"Validation error: {str(ve)}")
+        return jsonify({'error': str(ve)}), 400
     except Exception as e:
         error_msg = str(e)
         logging.error(f"Error processing historical data request: {error_msg}", exc_info=True)
