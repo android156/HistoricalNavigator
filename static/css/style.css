@@ -18,6 +18,18 @@
     border-radius: 0.25rem;
 }
 
+.historical-image {
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+.historical-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 .loading {
     opacity: 0.7;
     pointer-events: none;

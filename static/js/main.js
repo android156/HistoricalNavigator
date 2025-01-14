@@ -79,6 +79,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="historical-data">
                 <h5 class="mb-4">Территория: ${data.territory}</h5>
 
+                ${data.image_url ? `
+                    <div class="mb-4">
+                        <div class="historical-image">
+                            <img src="${data.image_url}" alt="Историческая визуализация" class="img-fluid rounded">
+                        </div>
+                    </div>
+                ` : ''}
+
                 <div class="mb-4">
                     <h6>События:</h6>
                     <div class="ms-3">

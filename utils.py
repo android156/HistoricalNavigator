@@ -11,6 +11,32 @@ from openai import OpenAI
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai = OpenAI(api_key=OPENAI_API_KEY)
 
+def generate_historical_image(territory, time_period, historical_data):
+    try:
+        prompt = f"""Создайте детальное изображение исторической сцены для {territory} в период {time_period}.
+
+        Изображение должно включать:
+        - Архитектуру: {historical_data['culture']['architecture']}
+        - Одежду: {historical_data['culture']['clothing']}
+        - Технологии и утварь: {historical_data['culture']['technology']}
+        - События: {', '.join(historical_data['events'])}
+
+        Стиль: реалистичный, детализированный, исторически достоверный.
+        Обязательно включите характерные элементы эпохи, людей в исторических костюмах, архитектуру и предметы быта."""
+
+        response = openai.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            size="1024x1024",
+            quality="hd",
+            n=1
+        )
+
+        return response.data[0].url
+    except Exception as e:
+        logging.error(f"Error generating historical image: {str(e)}")
+        return None
+
 def log_action(action_type, action_data):
     try:
         map_action = MapAction(
@@ -52,6 +78,16 @@ def get_historical_data(latitude, longitude, time_period):
         )
 
         historical_data = json.loads(response.choices[0].message.content)
+
+        # Генерируем изображение на основе полученных данных
+        image_url = generate_historical_image(
+            historical_data['territory'], 
+            time_period,
+            historical_data
+        )
+
+        # Добавляем URL изображения к данным
+        historical_data['image_url'] = image_url
 
         # Store query in database
         query = HistoricalQuery(
