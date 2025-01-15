@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.className = 'd-flex gallery-row';
                 div.appendChild(row);
                 
-                for (let j = i; j < i + itemsPerSlide && j < shuffledPoints.length; j++) {
+                for (let j = i; j < i + itemsPerRow && j < shuffledPoints.length; j++) {
                     const point = shuffledPoints[j];
                     const locationText = `${point.response_data.territory}, ${point.time_period}`;
                     
