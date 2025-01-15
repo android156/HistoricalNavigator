@@ -317,8 +317,42 @@ async function loadHistoricalPoints() {
             objectManager.clusters.events.add('click', function (e) {
                 const cluster = objectManager.clusters.getById(e.get('objectId'));
                 const center = cluster.geometry.coordinates;
-                const zoom = map.getZoom() + 2;
-                map.setCenter(center, zoom, { duration: 300 });
+                const currentZoom = map.getZoom();
+                
+                // Находим оптимальный зум для разбиения кластера
+                let targetZoom = currentZoom + 1;
+                let found = false;
+                
+                // Проверяем следующие уровни зума, пока не найдем подходящий
+                while (targetZoom <= 19 && !found) {
+                    const bounds = map.getBounds();
+                    const testClusters = clusterPoints(data, targetZoom);
+                    
+                    // Считаем точки в видимой области карты
+                    const visiblePoints = Object.values(testClusters)
+                        .flat()
+                        .filter(point => {
+                            return point.latitude >= bounds[0][0] &&
+                                   point.latitude <= bounds[1][0] &&
+                                   point.longitude >= bounds[0][1] &&
+                                   point.longitude <= bounds[1][1];
+                        });
+
+                    // Если точек больше одной и они образуют как минимум 2 кластера
+                    if (visiblePoints.length >= cluster.properties.geoObjects &&
+                        Object.keys(testClusters).length >= 2) {
+                        found = true;
+                        break;
+                    }
+                    targetZoom++;
+                }
+
+                // Если не нашли подходящий зум, используем максимально возможный
+                if (!found) {
+                    targetZoom = Math.min(currentZoom + 2, 19);
+                }
+
+                map.setCenter(center, targetZoom, { duration: 300 });
             });
 
             map.geoObjects.add(objectManager);
