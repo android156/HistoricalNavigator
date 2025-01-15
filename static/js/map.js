@@ -246,106 +246,109 @@ async function loadHistoricalPoints() {
         }
 
         // Функция для распределения точек по спирали
-        function calculateSpiralPosition(center, index, totalPoints) {
+        function calculateSpiralPosition(center, index, totalPoints, zoom) {
             if (totalPoints <= 1) return center;
 
+            // Увеличиваем радиус при большем зуме
+            const baseRadius = 0.0001 * Math.pow(2, (21 - zoom));
             const angle = index * (2 * Math.PI) / totalPoints;
-            const radius = 0.002 * Math.ceil(index / 4);
+            const radius = baseRadius * (1 + index / totalPoints);
+
             return [
                 center[0] + radius * Math.cos(angle),
                 center[1] + radius * Math.sin(angle)
             ];
         }
 
-let currentClusters = clusterPoints(data, map.getZoom());
+        let currentClusters = clusterPoints(data, map.getZoom());
 
-// Обработчик изменения масштаба
-map.events.add('boundschange', function() {
-    currentClusters = clusterPoints(data, map.getZoom());
-    updateMarkers();
-});
-
-function updateMarkers() {
-    // Очищаем текущие маркеры
-    map.geoObjects.removeAll();
-    historicalPoints = [];
-
-    // Создаем ObjectManager для эффективного управления точками
-    const objectManager = new ymaps.ObjectManager({
-        clusterize: true,
-        gridSize: 32,
-        clusterDisableClickZoom: true,
-        clusterOpenBalloonOnClick: false,
-        clusterIconLayout: 'default#pieChart',
-        clusterIconPieChartRadius: 25,
-        clusterIconPieChartCoreRadius: 10,
-        clusterIconPieChartStrokeWidth: 3,
-        geoObjectOpenBalloonOnClick: false
-    });
-
-    // Добавляем обработчик клика на кластер
-    objectManager.clusters.events.add('click', function (e) {
-        const cluster = objectManager.clusters.getById(e.get('objectId'));
-        const center = cluster.geometry.coordinates;
-        const zoom = map.getZoom() + 2;
-        map.setCenter(center, zoom, { duration: 300 });
-    });
-
-    map.geoObjects.add(objectManager);
-
-    // Преобразуем точки в формат ObjectManager
-    const objects = {
-        type: 'FeatureCollection',
-        features: []
-    };
-
-    Object.values(currentClusters).flat().forEach((point, index) => {
-        objects.features.push({
-            type: 'Feature',
-            id: index,
-            geometry: {
-                type: 'Point',
-                coordinates: [point.latitude, point.longitude]
-            },
-            properties: {
-                balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
-                balloonContentBody: point.response_data.description || '',
-                clusterCaption: point.response_data.territory,
-                hintContent: `${point.response_data.territory}, ${point.time_period}`
-            },
-            options: {
-                preset: 'islands#nightCircleDotIcon',
-                iconColor: '#0066ff'
-            }
+        // Обработчик изменения масштаба
+        map.events.add('boundschange', function() {
+            currentClusters = clusterPoints(data, map.getZoom());
+            updateMarkers();
         });
-    });
 
-    // Добавляем обработчик клика на точки
-    objectManager.objects.events.add('click', (e) => {
-        const obj = objectManager.objects.getById(e.get('objectId'));
-        if (obj) {
-            const coords = obj.geometry.coordinates;
-            const clusterKey = Object.keys(currentClusters).find(key => {
-                return currentClusters[key].some(point => 
-                    point.latitude === coords[0] && point.longitude === coords[1]
-                );
+        function updateMarkers() {
+            // Очищаем текущие маркеры
+            map.geoObjects.removeAll();
+            historicalPoints = [];
+
+            // Создаем ObjectManager для эффективного управления точками
+            const objectManager = new ymaps.ObjectManager({
+                clusterize: true,
+                gridSize: 32,
+                clusterDisableClickZoom: true,
+                clusterOpenBalloonOnClick: false,
+                clusterIconLayout: 'default#pieChart',
+                clusterIconPieChartRadius: 25,
+                clusterIconPieChartCoreRadius: 10,
+                clusterIconPieChartStrokeWidth: 3,
+                geoObjectOpenBalloonOnClick: false
             });
-            
-            if (clusterKey) {
-                const point = currentClusters[clusterKey].find(p => 
-                    p.latitude === coords[0] && p.longitude === coords[1]
-                );
-                if (point && point.response_data) {
-                    displayHistoricalData(point.response_data);
+
+            // Добавляем обработчик клика на кластер
+            objectManager.clusters.events.add('click', function (e) {
+                const cluster = objectManager.clusters.getById(e.get('objectId'));
+                const center = cluster.geometry.coordinates;
+                const zoom = map.getZoom() + 2;
+                map.setCenter(center, zoom, { duration: 300 });
+            });
+
+            map.geoObjects.add(objectManager);
+
+            // Преобразуем точки в формат ObjectManager
+            const objects = {
+                type: 'FeatureCollection',
+                features: []
+            };
+
+            Object.values(currentClusters).flat().forEach((point, index) => {
+                objects.features.push({
+                    type: 'Feature',
+                    id: index,
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [point.latitude, point.longitude]
+                    },
+                    properties: {
+                        balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
+                        balloonContentBody: point.response_data.description || '',
+                        clusterCaption: point.response_data.territory,
+                        hintContent: `${point.response_data.territory}, ${point.time_period}`
+                    },
+                    options: {
+                        preset: 'islands#nightCircleDotIcon',
+                        iconColor: '#0066ff'
+                    }
+                });
+            });
+
+            // Добавляем обработчик клика на точки
+            objectManager.objects.events.add('click', (e) => {
+                const obj = objectManager.objects.getById(e.get('objectId'));
+                if (obj) {
+                    const coords = obj.geometry.coordinates;
+                    const clusterKey = Object.keys(currentClusters).find(key => {
+                        return currentClusters[key].some(point => 
+                            point.latitude === coords[0] && point.longitude === coords[1]
+                        );
+                    });
+
+                    if (clusterKey) {
+                        const point = currentClusters[clusterKey].find(p => 
+                            p.latitude === coords[0] && p.longitude === coords[1]
+                        );
+                        if (point && point.response_data) {
+                            displayHistoricalData(point.response_data);
+                        }
+                    }
                 }
-            }
+            });
+
+            objectManager.add(objects);
         }
-    });
 
-    objectManager.add(objects);
-}
-
-updateMarkers();
+        updateMarkers();
     } catch (error) {
         console.error('Error loading historical points:', error);
     }
