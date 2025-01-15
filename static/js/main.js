@@ -157,21 +157,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             shuffledPoints.forEach((point, index) => {
-                    const div = document.createElement('div');
-                    div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-                    
-                    const locationText = `${point.response_data.territory}, ${point.time_period}`;
-                    
-                    div.innerHTML = `
-                        <div class="image-location-overlay">${locationText}</div>
-                        <img src="${point.image_url}" 
-                             class="d-block w-100" 
-                             alt="Historical Image"
-                             data-location="${locationText}">
-                    `;
-                    
-                    carouselInner.appendChild(div);
-                }
+                const div = document.createElement('div');
+                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                
+                const locationText = `${point.response_data.territory}, ${point.time_period}`;
+                
+                div.innerHTML = `
+                    <div class="image-location-overlay">${locationText}</div>
+                    <img src="${point.image_url}" 
+                         class="d-block w-100" 
+                         alt="Historical Image"
+                         data-location="${locationText}">
+                `;
+                
+                carouselInner.appendChild(div);
             });
         } catch (error) {
             console.error('Error loading gallery:', error);
