@@ -170,6 +170,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
             galleryCarousel.classList.toggle('gallery-dual', isDual);
 
+            function createSlide(points, isActive) {
+                const slide = document.createElement('div');
+                slide.className = `carousel-item ${isActive ? 'active' : ''}`;
+                
+                points.forEach(point => {
+                    const container = document.createElement('div');
+                    container.className = 'gallery-image-container';
+                    
+                    const locationOverlay = document.createElement('div');
+                    locationOverlay.className = 'image-location-overlay';
+                    locationOverlay.textContent = `${point.response_data.territory}, ${point.time_period}`;
+                    
+                    const img = document.createElement('img');
+                    img.src = point.image_url;
+                    img.alt = 'Historical Image';
+                    img.setAttribute('data-location', `${point.response_data.territory}, ${point.time_period}`);
+                    
+                    container.appendChild(locationOverlay);
+                    container.appendChild(img);
+                    slide.appendChild(container);
+                });
+                
+                return slide;
+            }
+
             // Create all slides
             for (let i = 0; i < shuffledPoints.length; i++) {
                 const points = isDual ? 
