@@ -28,6 +28,8 @@ def check_points():
             print(f"Всего точек: {total_points}")
             print(f"Точек с локальными изображениями: {points_with_local_images}")
             print(f"Точек без локальных изображений: {points_without_local_images}")
+        except Exception as e:
+            print(f"Ошибка при проверке точек: {e}")
 
 if __name__ == "__main__":
     check_points()
