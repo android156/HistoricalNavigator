@@ -142,13 +142,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const points = await response.json();
             
             // Shuffle points array
-            const shuffledPoints = points.sort(() => Math.random() - 0.5);
+            // Filter points that have both image_url and response_data
+            const validPoints = points.filter(point => point.image_url && point.response_data);
+            
+            // Shuffle the filtered points
+            const shuffledPoints = validPoints.sort(() => Math.random() - 0.5);
             
             const carouselInner = document.getElementById('carouselInner');
             carouselInner.innerHTML = '';
             
+            if (shuffledPoints.length === 0) {
+                carouselInner.innerHTML = '<div class="carousel-item active"><p class="text-center p-5">Нет доступных изображений</p></div>';
+                return;
+            }
+            
             shuffledPoints.forEach((point, index) => {
-                if (point.image_url && point.response_data) {
                     const div = document.createElement('div');
                     div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
                     
