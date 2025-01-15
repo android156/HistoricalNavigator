@@ -143,7 +143,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Shuffle points array
             // Filter points that have both image_url and response_data
-            const validPoints = points.filter(point => point.image_url && point.response_data);
+            const validPoints = points.filter(point => {
+                return point.image_url && 
+                       point.response_data && 
+                       point.image_url !== 'Historical Image' &&
+                       !point.image_url.includes('undefined') &&
+                       point.image_url.trim() !== '';
+            });
             
             // Shuffle the filtered points
             const shuffledPoints = validPoints.sort(() => Math.random() - 0.5);
