@@ -3,22 +3,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const historicalInfo = document.getElementById('historicalInfo');
     const timePeriodInput = document.getElementById('timePeriod');
     const locationInput = document.getElementById('locationInput');
-
-    // Initialize modal
-    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-
+    
     // Initialize gallery
-    initializeGallery().then(() => {
-        // Initialize modal events after gallery is loaded
-        document.querySelectorAll('.carousel-item img').forEach(img => {
-            img.addEventListener('click', function() {
-                document.getElementById('modalImage').src = this.src;
-                document.getElementById('imageModalLabel').textContent = this.getAttribute('data-location');
-                imageModal.show();
-            });
+    initializeGallery();
+    
+    // Initialize modal events
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    document.querySelectorAll('.carousel-item img').forEach(img => {
+        img.addEventListener('click', function() {
+            document.getElementById('modalImage').src = this.src;
+            document.getElementById('imageModalLabel').textContent = this.getAttribute('data-location');
+            imageModal.show();
         });
-    }).catch(error => {
-        console.error('Error initializing gallery:', error);
     });
 
     function parseTimePeriod(input) {
@@ -144,7 +140,9 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/api/historical-points');
             const points = await response.json();
-
+            
+            // Shuffle points array
+            // Filter points that have both image_url and response_data
             const validPoints = points.filter(point => {
                 return point.image_url && 
                        point.response_data && 
@@ -152,140 +150,33 @@ document.addEventListener('DOMContentLoaded', function() {
                        !point.image_url.includes('undefined') &&
                        point.image_url.trim() !== '';
             });
-
+            
+            // Shuffle the filtered points
             const shuffledPoints = validPoints.sort(() => Math.random() - 0.5);
+            
             const carouselInner = document.getElementById('carouselInner');
-            const galleryCarousel = document.querySelector('.gallery-carousel');
             carouselInner.innerHTML = '';
-
+            
             if (shuffledPoints.length === 0) {
                 carouselInner.innerHTML = '<div class="carousel-item active"><p class="text-center p-5">Нет доступных изображений</p></div>';
                 return;
             }
-
-            // Check if we should display dual images
-            const containerWidth = galleryCarousel.offsetWidth;
-            const containerHeight = 300;
-            const isDual = containerWidth / containerHeight > 2.5;
-
-            galleryCarousel.classList.toggle('gallery-dual', isDual);
-
-            function createSlide(points, isActive) {
-                const slide = document.createElement('div');
-                slide.className = `carousel-item ${isActive ? 'active' : ''}`;
-
-                points.forEach(point => {
-                    const container = document.createElement('div');
-                    container.className = 'gallery-image-container';
-
-                    const locationOverlay = document.createElement('div');
-                    locationOverlay.className = 'image-location-overlay';
-                    locationOverlay.textContent = `${point.response_data.territory}, ${point.time_period}`;
-
-                    const img = document.createElement('img');
-                    img.src = point.image_url;
-                    img.alt = 'Historical Image';
-                    img.setAttribute('data-location', `${point.response_data.territory}, ${point.time_period}`);
-
-                    container.appendChild(locationOverlay);
-                    container.appendChild(img);
-                    slide.appendChild(container);
-                });
-
-                return slide;
-            }
-
-            // Create all slides
-            for (let i = 0; i < shuffledPoints.length; i++) {
-                const points = isDual ? 
-                    [shuffledPoints[i], i + 1 < shuffledPoints.length ? shuffledPoints[i + 1] : null].filter(Boolean) : 
-                    [shuffledPoints[i]];
-
-                if (points.length > 0) {
-                    carouselInner.appendChild(createSlide(points, i === 0));
-                }
-            }
-
-            // Initialize carousel with proper settings
-            const carousel = new bootstrap.Carousel(document.getElementById('imageCarousel'), {
-                interval: 5000,
-                keyboard: true,
-                pause: 'hover',
-                ride: 'carousel',
-                wrap: true,
-                direction: 'rtl'
-            });
-
-            // Custom slide functionality
-            const prevButton = document.querySelector('.carousel-control-prev');
-            const nextButton = document.querySelector('.carousel-control-next');
-
-            function moveSlide(direction) {
-                const activeSlide = document.querySelector('.carousel-item.active');
-                const slides = document.querySelectorAll('.carousel-item');
-                const currentIndex = Array.from(slides).indexOf(activeSlide);
-                let nextIndex;
-
-                if (direction === 'next') {
-                    nextIndex = (currentIndex + 1) % slides.length;
-                } else {
-                    nextIndex = (currentIndex - 1 + slides.length) % slides.length;
-                }
-
-                slides[currentIndex].classList.remove('active');
-                slides[nextIndex].classList.add('active');
-            }
-
-            prevButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                moveSlide('prev');
-            });
-
-            nextButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                moveSlide('next');
-            });
-
-            // Auto-slide
-            setInterval(() => {
-                moveSlide('next');
-            }, 5000);
-
-            // Функция для обновления количества изображений в слайде
-            const updateGalleryLayout = () => {
-                const galleryCarousel = document.querySelector('.gallery-carousel');
-                const containerWidth = galleryCarousel.offsetWidth;
-                const containerHeight = 300;
-                const isDual = containerWidth / containerHeight > 2.5;
-
-                galleryCarousel.classList.toggle('gallery-dual', isDual);
-
-                // Перестраиваем слайды
-                const carouselInner = document.getElementById('carouselInner');
-                carouselInner.innerHTML = '';
-
-                for (let i = 0; i < shuffledPoints.length; i++) {
-                    const points = isDual ? 
-                        [shuffledPoints[i], i + 1 < shuffledPoints.length ? shuffledPoints[i + 1] : null].filter(Boolean) : 
-                        [shuffledPoints[i]];
-
-                    if (points.length > 0) {
-                        carouselInner.appendChild(createSlide(points, i === 0));
-                    }
-                }
-            };
-
-            // Обновляем layout при изменении размера окна
-            window.addEventListener('resize', updateGalleryLayout);
-            updateGalleryLayout(); // Инициализация
-
-            // Reinitialize click handlers for the modal
-            document.querySelectorAll('.carousel-item img').forEach(img => {
-                img.addEventListener('click', function() {
-                    document.getElementById('modalImage').src = this.src;
-                    document.getElementById('imageModalLabel').textContent = this.getAttribute('data-location');
-                    imageModal.show();
-                });
+            
+            shuffledPoints.forEach((point, index) => {
+                const div = document.createElement('div');
+                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                
+                const locationText = `${point.response_data.territory}, ${point.time_period}`;
+                
+                div.innerHTML = `
+                    <div class="image-location-overlay">${locationText}</div>
+                    <img src="${point.image_url}" 
+                         class="d-block w-100" 
+                         alt="Historical Image"
+                         data-location="${locationText}">
+                `;
+                
+                carouselInner.appendChild(div);
             });
         } catch (error) {
             console.error('Error loading gallery:', error);
