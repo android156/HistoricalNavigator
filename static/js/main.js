@@ -172,16 +172,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 galleryCarousel.classList.add('gallery-dual');
                 
                 // Create slides with two images each
-                for (let i = 0; i < shuffledPoints.length; i += 2) {
+                for (let i = 0; i < shuffledPoints.length; i += (isDual ? 2 : 1)) {
                     const div = document.createElement('div');
                     div.className = `carousel-item ${i === 0 ? 'active' : ''}`;
                     
-                    const points = [shuffledPoints[i]];
-                    if (i + 1 < shuffledPoints.length) {
-                        points.push(shuffledPoints[i + 1]);
-                    }
+                    const currentPoints = isDual ? 
+                        [shuffledPoints[i], shuffledPoints[i + 1]].filter(Boolean) : 
+                        [shuffledPoints[i]];
                     
-                    div.innerHTML = points.map(point => {
+                    div.innerHTML = currentPoints.map(point => {
                         const locationText = `${point.response_data.territory}, ${point.time_period}`;
                         return `
                             <div class="gallery-image-container">

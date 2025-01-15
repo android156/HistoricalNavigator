@@ -70,16 +70,20 @@
 
 .gallery-carousel {
     margin: 20px 0;
+    position: relative;
 }
 
 .carousel-item {
     display: flex;
     gap: 10px;
+    justify-content: center;
 }
 
 .gallery-image-container {
+    position: relative;
     flex: 1;
-    display: none;
+    max-width: 50%;
+    display: block;
 }
 
 .carousel-item img {
@@ -87,6 +91,7 @@
     width: 100%;
     object-fit: cover;
     cursor: pointer;
+    border-radius: 8px;
 }
 
 .gallery-dual .carousel-item .gallery-image-container {
