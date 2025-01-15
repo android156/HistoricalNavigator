@@ -317,9 +317,21 @@ function updateMarkers() {
     objectManager.objects.events.add('click', (e) => {
         const obj = objectManager.objects.getById(e.get('objectId'));
         if (obj) {
-            displayHistoricalData(
-                currentClusters[Object.keys(currentClusters)[0]][0].response_data
-            );
+            const coords = obj.geometry.coordinates;
+            const clusterKey = Object.keys(currentClusters).find(key => {
+                return currentClusters[key].some(point => 
+                    point.latitude === coords[0] && point.longitude === coords[1]
+                );
+            });
+            
+            if (clusterKey) {
+                const point = currentClusters[clusterKey].find(p => 
+                    p.latitude === coords[0] && p.longitude === coords[1]
+                );
+                if (point && point.response_data) {
+                    displayHistoricalData(point.response_data);
+                }
+            }
         }
     });
 
