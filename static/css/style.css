@@ -72,10 +72,31 @@
     margin: 20px 0;
 }
 
+.carousel-item {
+    display: flex;
+    gap: 10px;
+}
+
+.gallery-image-container {
+    flex: 1;
+    display: none;
+}
+
 .carousel-item img {
     height: 300px;
+    width: 100%;
     object-fit: cover;
     cursor: pointer;
+}
+
+.gallery-dual .carousel-item .gallery-image-container {
+    display: block;
+}
+
+.gallery-dual .carousel-item.active,
+.gallery-dual .carousel-item-next,
+.gallery-dual .carousel-item-prev {
+    display: flex;
 }
 
 .image-location-overlay {
