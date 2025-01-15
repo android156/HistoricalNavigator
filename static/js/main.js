@@ -192,15 +192,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = 0; i < shuffledPoints.length; i += 2) {
                     const currentPoints = [
                         shuffledPoints[i],
-                        shuffledPoints[i + 1]
+                        i + 1 < shuffledPoints.length ? shuffledPoints[i + 1] : null
                     ].filter(Boolean);
 
                     if (currentPoints.length > 0) {
-                        carouselInner.appendChild(
-                            createSlide(currentPoints, i === 0)
-                        );
+                        const slide = createSlide(currentPoints, i === 0);
+                        carouselInner.appendChild(slide);
                     }
                 }
+
+                // Initialize Bootstrap carousel with proper settings
+                new bootstrap.Carousel(document.getElementById('imageCarousel'), {
+                    interval: 5000,
+                    ride: true,
+                    wrap: true
+                });
             } else {
                 shuffledPoints.forEach((point, index) => {
                     carouselInner.appendChild(
