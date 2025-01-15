@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const historicalInfo = document.getElementById('historicalInfo');
     const timePeriodInput = document.getElementById('timePeriod');
     const locationInput = document.getElementById('locationInput');
-    
+
     // Initialize modal
     const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-    
+
     // Initialize gallery
     initializeGallery().then(() => {
         // Initialize modal events after gallery is loaded
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('/api/historical-points');
             const points = await response.json();
-            
+
             const validPoints = points.filter(point => {
                 return point.image_url && 
                        point.response_data && 
@@ -152,12 +152,12 @@ document.addEventListener('DOMContentLoaded', function() {
                        !point.image_url.includes('undefined') &&
                        point.image_url.trim() !== '';
             });
-            
+
             const shuffledPoints = validPoints.sort(() => Math.random() - 0.5);
             const carouselInner = document.getElementById('carouselInner');
             const galleryCarousel = document.querySelector('.gallery-carousel');
             carouselInner.innerHTML = '';
-            
+
             if (shuffledPoints.length === 0) {
                 carouselInner.innerHTML = '<div class="carousel-item active"><p class="text-center p-5">Нет доступных изображений</p></div>';
                 return;
@@ -168,43 +168,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const containerHeight = 300; // Fixed height from CSS
             const isDual = containerWidth / containerHeight > 2.5;
             const itemsPerSlide = isDual ? 2 : 1;
-            
-            if (isDual) {
-                galleryCarousel.classList.add('gallery-dual');
-                
-                // Create slides with two images each
-                for (let i = 0; i < shuffledPoints.length; i += itemsPerSlide) {
-                    const div = document.createElement('div');
-                    div.className = `carousel-item ${i === 0 ? 'active' : ''}`;
-                    
-                    const currentPoints = isDual ? 
-                        [shuffledPoints[i], shuffledPoints[i + 1]].filter(Boolean) : 
-                        [shuffledPoints[i]];
-                    
-                    div.innerHTML = currentPoints.map(point => {
-                        const locationText = `${point.response_data.territory}, ${point.time_period}`;
-                        return `
-                            <div class="gallery-image-container">
-                                <div class="image-location-overlay">${locationText}</div>
-                                <img src="${point.image_url}" 
-                                     alt="Historical Image"
-                                     data-location="${locationText}">
-                            </div>
-                        `;
-                    }).join('');
-                    
-                    carouselInner.appendChild(div);
-                }
-            } else {
-                galleryCarousel.classList.remove('gallery-dual');
-                
-                // Single image display
-                shuffledPoints.forEach((point, index) => {
-                    const div = document.createElement('div');
-                    div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
-                    
+
+            const createSlide = (points, isActive = false) => {
+                const div = document.createElement('div');
+                div.className = `carousel-item ${isActive ? 'active' : ''}`;
+
+                div.innerHTML = points.map(point => {
                     const locationText = `${point.response_data.territory}, ${point.time_period}`;
-                    div.innerHTML = `
+                    return `
                         <div class="gallery-image-container">
                             <div class="image-location-overlay">${locationText}</div>
                             <img src="${point.image_url}" 
@@ -212,11 +183,32 @@ document.addEventListener('DOMContentLoaded', function() {
                                  data-location="${locationText}">
                         </div>
                     `;
-                    
-                    carouselInner.appendChild(div);
+                }).join('');
+
+                return div;
+            };
+
+            if (isDual) {
+                for (let i = 0; i < shuffledPoints.length; i += 2) {
+                    const currentPoints = [
+                        shuffledPoints[i],
+                        shuffledPoints[i + 1]
+                    ].filter(Boolean);
+
+                    if (currentPoints.length > 0) {
+                        carouselInner.appendChild(
+                            createSlide(currentPoints, i === 0)
+                        );
+                    }
+                }
+            } else {
+                shuffledPoints.forEach((point, index) => {
+                    carouselInner.appendChild(
+                        createSlide([point], index === 0)
+                    );
                 });
             }
-            
+
             // Reinitialize click handlers for the modal
             document.querySelectorAll('.carousel-item img').forEach(img => {
                 img.addEventListener('click', function() {

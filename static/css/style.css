@@ -76,32 +76,19 @@
 
 .carousel-item {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     justify-content: center;
-    transition: transform .6s ease-in-out;
+    transition: transform 0.6s ease;
 }
 
 .gallery-image-container {
     position: relative;
     flex: 1;
-    max-width: calc(50% - 5px);
     display: block;
 }
 
-.gallery-dual .carousel-item.active,
-.gallery-dual .carousel-item-next,
-.gallery-dual .carousel-item-prev {
-    display: flex;
-}
-
-.gallery-dual .carousel-item-end.active,
-.gallery-dual .carousel-item-next {
-    transform: translateX(100%);
-}
-
-.gallery-dual .carousel-item-start.active, 
-.gallery-dual .carousel-item-prev {
-    transform: translateX(-100%);
+.gallery-dual .gallery-image-container {
+    max-width: calc(50% - 7.5px);
 }
 
 .carousel-item img {
