@@ -237,61 +237,20 @@ async function loadHistoricalPoints() {
             return;
         }
 
-        function arrangePointsSpirally(points) {
-            const MIN_DISTANCE = 0.001; // Увеличенное минимальное расстояние между точками
-            const result = [];
-            
-            // Группируем точки по близости координат
-            const groups = {};
-            points.forEach(point => {
-                const key = `${Math.round(point.latitude * 100) / 100},${Math.round(point.longitude * 100) / 100}`;
-                if (!groups[key]) groups[key] = [];
-                groups[key].push(point);
-            });
-
-            // Обрабатываем каждую группу точек
-            Object.values(groups).forEach(groupPoints => {
-                if (groupPoints.length === 1) {
-                    result.push({
-                        point: groupPoints[0],
-                        coords: [groupPoints[0].latitude, groupPoints[0].longitude]
-                    });
-                } else {
-                    // Вычисляем центр группы
-                    const centerLat = groupPoints.reduce((sum, p) => sum + p.latitude, 0) / groupPoints.length;
-                    const centerLon = groupPoints.reduce((sum, p) => sum + p.longitude, 0) / groupPoints.length;
-
-                    // Размещаем точки по спирали
-                    groupPoints.forEach((point, index) => {
-                        if (index === 0) {
-                            result.push({
-                                point: point,
-                                coords: [centerLat, centerLon]
-                            });
-                        } else {
-                            const angle = (index - 1) * (Math.PI / 4);
-                            const radius = MIN_DISTANCE * (1 + Math.floor((index - 1) / 8));
-                            result.push({
-                                point: point,
-                                coords: [
-                                    centerLat + radius * Math.cos(angle),
-                                    centerLon + radius * Math.sin(angle)
-                                ]
-                            });
-                        }
-                    });
-                }
-            });
-
-            return result;
-        }
-
         // Очищаем текущие точки
         map.geoObjects.removeAll();
         historicalPoints = [];
 
         const pointCollection = new ymaps.GeoObjectCollection();
-        const arrangedPoints = arrangePointsSpirally(data);
+        const bounds = map.getBounds();
+        const arrangedPoints = arrangePointsSpirally(data, {
+            contains: coords => {
+                return coords[0] >= bounds[0][0] && 
+                       coords[0] <= bounds[1][0] && 
+                       coords[1] >= bounds[0][1] && 
+                       coords[1] <= bounds[1][1];
+            }
+        });
 
         arrangedPoints.forEach(({point, coords}, index) => {
                 const placemark = new ymaps.Placemark(
@@ -329,3 +288,56 @@ async function loadHistoricalPoints() {
 // Экспортируем функции для использования в main.js
 window.searchLocation = searchLocation;
 window.getCurrentMarkerPosition = getCurrentMarkerPosition;
+
+function arrangePointsSpirally(points, options = {}) {
+    const MIN_DISTANCE = 0.001; // Увеличенное минимальное расстояние между точками
+    const result = [];
+
+    //Apply bounds filter if provided
+    const filteredPoints = options.contains ? points.filter(point => options.contains([point.latitude, point.longitude])) : points;
+
+
+    // Группируем точки по близости координат
+    const groups = {};
+    filteredPoints.forEach(point => {
+        const key = `${Math.round(point.latitude * 100) / 100},${Math.round(point.longitude * 100) / 100}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(point);
+    });
+
+    // Обрабатываем каждую группу точек
+    Object.values(groups).forEach(groupPoints => {
+        if (groupPoints.length === 1) {
+            result.push({
+                point: groupPoints[0],
+                coords: [groupPoints[0].latitude, groupPoints[0].longitude]
+            });
+        } else {
+            // Вычисляем центр группы
+            const centerLat = groupPoints.reduce((sum, p) => sum + p.latitude, 0) / groupPoints.length;
+            const centerLon = groupPoints.reduce((sum, p) => sum + p.longitude, 0) / groupPoints.length;
+
+            // Размещаем точки по спирали
+            groupPoints.forEach((point, index) => {
+                if (index === 0) {
+                    result.push({
+                        point: point,
+                        coords: [centerLat, centerLon]
+                    });
+                } else {
+                    const angle = (index - 1) * (Math.PI / 4);
+                    const radius = MIN_DISTANCE * (1 + Math.floor((index - 1) / 8));
+                    result.push({
+                        point: point,
+                        coords: [
+                            centerLat + radius * Math.cos(angle),
+                            centerLon + radius * Math.sin(angle)
+                        ]
+                    });
+                }
+            });
+        }
+    });
+
+    return result;
+}
