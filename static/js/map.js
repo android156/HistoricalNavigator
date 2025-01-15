@@ -229,147 +229,64 @@ async function loadHistoricalPoints() {
             return;
         }
 
-        // Преобразование точек в формат для отображения
-        function preparePoints(points) {
-            const result = {};
-            points.forEach(point => {
-                const key = `${point.latitude},${point.longitude}`;
-                result[key] = [point];
+        // Очищаем текущие точки
+        map.geoObjects.removeAll();
+        historicalPoints = [];
+
+        const pointCollection = new ymaps.GeoObjectCollection();
+        const MIN_DISTANCE = 0.0001; // Минимальное расстояние между точками
+        const usedPositions = new Map();
+
+        data.forEach((point, index) => {
+            let baseCoords = [point.latitude, point.longitude];
+            let adjustedCoords = [...baseCoords];
+            
+            // Проверяем, есть ли уже точки рядом
+            const nearby = Array.from(usedPositions.entries()).find(([coords, _]) => {
+                const [lat, lon] = coords.split(',').map(Number);
+                const dist = Math.sqrt(
+                    Math.pow(lat - baseCoords[0], 2) + 
+                    Math.pow(lon - baseCoords[1], 2)
+                );
+                return dist < MIN_DISTANCE;
             });
-            return result;
-        }
 
-        // Функция для распределения точек по спирали
-        function calculateSpiralPosition(center, index, totalPoints, zoom) {
-            if (totalPoints <= 1) return center;
+            if (nearby) {
+                // Если есть близкие точки, размещаем по спирали
+                const angle = (index * Math.PI / 4);
+                const spiralRadius = MIN_DISTANCE * (1 + Math.floor(index / 8));
+                adjustedCoords = [
+                    baseCoords[0] + spiralRadius * Math.cos(angle),
+                    baseCoords[1] + spiralRadius * Math.sin(angle)
+                ];
+            }
 
-            // Увеличиваем радиус при большем зуме
-            const baseRadius = 0.0001 * Math.pow(2, (21 - zoom));
-            const angle = index * (2 * Math.PI) / totalPoints;
-            const radius = baseRadius * (1 + index / totalPoints);
+            usedPositions.set(`${adjustedCoords[0]},${adjustedCoords[1]}`, point);
 
-            return [
-                center[0] + radius * Math.cos(angle),
-                center[1] + radius * Math.sin(angle)
-            ];
-        }
+            const placemark = new ymaps.Placemark(
+                adjustedCoords,
+                {
+                    balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
+                    balloonContentBody: point.response_data.description || '',
+                    hintContent: `${point.response_data.territory}, ${point.time_period}`
+                },
+                {
+                    preset: 'islands#nightCircleDotIcon',
+                    iconColor: '#0066ff'
+                }
+            );
 
-        let currentClusters = clusterPoints(data, map.getZoom());
+            placemark.events.add('click', () => {
+                if (point.response_data) {
+                    displayHistoricalData(point.response_data);
+                }
+            });
 
-        // Обработчик изменения масштаба
-        map.events.add('boundschange', function() {
-            currentClusters = clusterPoints(data, map.getZoom());
-            updateMarkers();
+            pointCollection.add(placemark);
+            historicalPoints.push(placemark);
         });
 
-        function updateMarkers() {
-            // Очищаем текущие маркеры
-            map.geoObjects.removeAll();
-            historicalPoints = [];
-
-            const pointCollection = new ymaps.GeoObjectCollection();
-            const MIN_DISTANCE = 0.0001; // Минимальное расстояние между точками
-            const points = Object.values(currentClusters).flat();
-            const usedPositions = new Set();
-
-            points.forEach((point, index) => {
-                let adjustedLat = point.latitude;
-                let adjustedLon = point.longitude;
-                let spiralStep = 0;
-                let angle = 0;
-
-                // Ищем свободное место по спирали
-                while (true) {
-                    const key = `${adjustedLat.toFixed(6)},${adjustedLon.toFixed(6)}`;
-                    if (!usedPositions.has(key)) {
-                        usedPositions.add(key);
-                        break;
-                    }
-
-                    // Увеличиваем угол и радиус для следующей позиции в спирали
-                    angle += Math.PI / 4;
-                    spiralStep += MIN_DISTANCE / (2 * Math.PI);
-                    adjustedLat = point.latitude + spiralStep * Math.cos(angle);
-                    adjustedLon = point.longitude + spiralStep * Math.sin(angle);
-                }
-
-                const placemark = new ymaps.Placemark(
-                    [adjustedLat, adjustedLon],
-                    {
-                        balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
-                        balloonContentBody: point.response_data.description || '',
-                        hintContent: `${point.response_data.territory}, ${point.time_period}`
-                    },
-                    {
-                        preset: 'islands#nightCircleDotIcon',
-                        iconColor: '#0066ff'
-                    }
-                );
-
-                placemark.events.add('click', () => {
-                    if (point.response_data) {
-                        displayHistoricalData(point.response_data);
-                    }
-                });
-
-                pointCollection.add(placemark);
-            });
-
-            map.geoObjects.add(pointCollection);
-
-            // Преобразуем точки в формат ObjectManager
-            const objects = {
-                type: 'FeatureCollection',
-                features: []
-            };
-
-            Object.values(currentClusters).flat().forEach((point, index) => {
-                objects.features.push({
-                    type: 'Feature',
-                    id: index,
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [point.latitude, point.longitude]
-                    },
-                    properties: {
-                        balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
-                        balloonContentBody: point.response_data.description || '',
-                        clusterCaption: point.response_data.territory,
-                        hintContent: `${point.response_data.territory}, ${point.time_period}`
-                    },
-                    options: {
-                        preset: 'islands#nightCircleDotIcon',
-                        iconColor: '#0066ff'
-                    }
-                });
-            });
-
-            // Добавляем обработчик клика на точки
-            objectManager.objects.events.add('click', (e) => {
-                const obj = objectManager.objects.getById(e.get('objectId'));
-                if (obj) {
-                    const coords = obj.geometry.coordinates;
-                    const clusterKey = Object.keys(currentClusters).find(key => {
-                        return currentClusters[key].some(point => 
-                            point.latitude === coords[0] && point.longitude === coords[1]
-                        );
-                    });
-
-                    if (clusterKey) {
-                        const point = currentClusters[clusterKey].find(p => 
-                            p.latitude === coords[0] && p.longitude === coords[1]
-                        );
-                        if (point && point.response_data) {
-                            displayHistoricalData(point.response_data);
-                        }
-                    }
-                }
-            });
-
-            objectManager.add(objects);
-        }
-
-        updateMarkers();
+        map.geoObjects.add(pointCollection);
     } catch (error) {
         console.error('Error loading historical points:', error);
     }
