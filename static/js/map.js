@@ -18,6 +18,14 @@ function initMap() {
         setMarkerAndGetAddress(coords);
     });
 
+
+    // Обновляем точки при изменении зума
+    map.events.add('boundschange', function (e) {
+        if (e.get('oldZoom') !== e.get('newZoom')) {
+            loadHistoricalPoints();
+        }
+    });
+
     // Log map movements
     map.events.add('boundschange', function (e) {
         logMapAction('map_move', {
@@ -229,14 +237,61 @@ async function loadHistoricalPoints() {
             return;
         }
 
+        function arrangePointsSpirally(points) {
+            const MIN_DISTANCE = 0.001; // Увеличенное минимальное расстояние между точками
+            const result = [];
+            
+            // Группируем точки по близости координат
+            const groups = {};
+            points.forEach(point => {
+                const key = `${Math.round(point.latitude * 100) / 100},${Math.round(point.longitude * 100) / 100}`;
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(point);
+            });
+
+            // Обрабатываем каждую группу точек
+            Object.values(groups).forEach(groupPoints => {
+                if (groupPoints.length === 1) {
+                    result.push({
+                        point: groupPoints[0],
+                        coords: [groupPoints[0].latitude, groupPoints[0].longitude]
+                    });
+                } else {
+                    // Вычисляем центр группы
+                    const centerLat = groupPoints.reduce((sum, p) => sum + p.latitude, 0) / groupPoints.length;
+                    const centerLon = groupPoints.reduce((sum, p) => sum + p.longitude, 0) / groupPoints.length;
+
+                    // Размещаем точки по спирали
+                    groupPoints.forEach((point, index) => {
+                        if (index === 0) {
+                            result.push({
+                                point: point,
+                                coords: [centerLat, centerLon]
+                            });
+                        } else {
+                            const angle = (index - 1) * (Math.PI / 4);
+                            const radius = MIN_DISTANCE * (1 + Math.floor((index - 1) / 8));
+                            result.push({
+                                point: point,
+                                coords: [
+                                    centerLat + radius * Math.cos(angle),
+                                    centerLon + radius * Math.sin(angle)
+                                ]
+                            });
+                        }
+                    });
+                }
+            });
+
+            return result;
+        }
+
         // Очищаем текущие точки
         map.geoObjects.removeAll();
         historicalPoints = [];
 
         const pointCollection = new ymaps.GeoObjectCollection();
-        const MIN_DISTANCE = 0.0005; // Минимальное расстояние между точками
-        const points = [...data];
-        const adjustedPoints = new Map();
+        const arrangedPoints = arrangePointsSpirally(data);
 
         // Находим усредненный центр для перекрывающихся точек
         const groupPoints = {};
@@ -313,35 +368,34 @@ async function loadHistoricalPoints() {
                 iteration++;
             }
 
-            adjustedPoints.set(`${adjustedCoords[0]},${adjustedCoords[1]}`, point);
+            arrangedPoints.forEach(({point, coords}, index) => {
+                const placemark = new ymaps.Placemark(
+                    coords,
+                    {
+                        balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
+                        balloonContentBody: point.response_data.description || '',
+                        hintContent: `${point.response_data.territory}, ${point.time_period}`
+                    },
+                    {
+                        preset: 'islands#nightCircleDotIcon',
+                        iconColor: '#0066ff',
+                        zIndex: 1000 + index,
+                        zIndexHover: 1100 + index,
+                        zIndexActive: 1200 + index
+                    }
+                );
 
-            const placemark = new ymaps.Placemark(
-                adjustedCoords,
-                {
-                    balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
-                    balloonContentBody: point.response_data.description || '',
-                    hintContent: `${point.response_data.territory}, ${point.time_period}`
-                },
-                {
-                    preset: 'islands#nightCircleDotIcon',
-                    iconColor: '#0066ff',
-                    zIndex: 1000 + index,
-                    zIndexHover: 1100 + index,
-                    zIndexActive: 1200 + index
-                }
-            );
+                placemark.events.add('click', () => {
+                    if (point.response_data) {
+                        displayHistoricalData(point.response_data);
+                    }
+                });
 
-            placemark.events.add('click', () => {
-                if (point.response_data) {
-                    displayHistoricalData(point.response_data);
-                }
+                pointCollection.add(placemark);
+                historicalPoints.push(placemark);
             });
 
-            pointCollection.add(placemark);
-            historicalPoints.push(placemark);
-        });
-
-        map.geoObjects.add(pointCollection);
+            map.geoObjects.add(pointCollection);
     } catch (error) {
         console.error('Error loading historical points:', error);
     }
