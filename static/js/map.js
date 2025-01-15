@@ -237,32 +237,6 @@ async function loadHistoricalPoints() {
             return;
         }
 
-        // Check and generate missing images
-        for (const point of data) {
-            if (!point.image_url) {
-                try {
-                    const imageResponse = await fetch('/api/historical-data', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            latitude: point.latitude,
-                            longitude: point.longitude,
-                            timePeriod: point.time_period,
-                            regenerateImage: true
-                        })
-                    });
-                    const newData = await imageResponse.json();
-                    if (newData.image_url) {
-                        point.image_url = newData.image_url;
-                    }
-                } catch (error) {
-                    console.error('Error generating image for point:', error);
-                }
-            }
-        }
-
         // Очищаем текущие точки
         map.geoObjects.removeAll();
         historicalPoints = [];

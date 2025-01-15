@@ -37,8 +37,7 @@ def get_history():
             'time_period': time_period
         })
 
-        regenerate_image = data.get('regenerateImage', False)
-        historical_info = get_historical_data(lat, lng, time_period, regenerate_image)
+        historical_info = get_historical_data(lat, lng, time_period)
         if not historical_info:
             return jsonify({'error': 'Данные не найдены'}), 404
             
