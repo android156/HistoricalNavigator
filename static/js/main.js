@@ -206,17 +206,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Initialize carousel
+            // Initialize carousel with proper settings
             const carousel = new bootstrap.Carousel(document.getElementById('imageCarousel'), {
                 interval: 5000,
+                keyboard: true,
+                pause: 'hover',
+                ride: 'carousel',
                 wrap: true
             });
 
-            // Add event listeners for smooth transitions
-            const carouselElement = document.getElementById('imageCarousel');
-            carouselElement.addEventListener('slide.bs.carousel', function (e) {
-                const direction = e.direction === 'left' ? 1 : -1;
-                e.relatedTarget.style.transform = `translateX(${direction * 100}%)`;
+            // Add controls functionality
+            document.querySelector('.carousel-control-prev').addEventListener('click', () => {
+                carousel.prev();
+            });
+            
+            document.querySelector('.carousel-control-next').addEventListener('click', () => {
+                carousel.next();
             });
 
 

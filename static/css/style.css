@@ -75,10 +75,13 @@
 }
 
 .carousel-item {
-    display: flex;
+    display: none;
     gap: 15px;
     justify-content: center;
-    transition: transform 0.6s ease-in-out;
+}
+
+.carousel-item.active {
+    display: flex;
 }
 
 .gallery-image-container {
