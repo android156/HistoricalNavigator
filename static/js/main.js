@@ -162,14 +162,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const itemsPerSlide = window.innerWidth < 768 ? 1 : 
-                                window.innerWidth < 992 ? 2 : 
-                                window.innerWidth < 1200 ? 3 : 4;
+            const itemsPerRow = window.innerWidth < 768 ? 1 : 
+                              window.innerWidth < 992 ? 2 : 
+                              window.innerWidth < 1200 ? 3 : 4;
+            
+            document.documentElement.style.setProperty('--items-per-row', itemsPerRow);
 
-            for (let i = 0; i < shuffledPoints.length; i += itemsPerSlide) {
+            for (let i = 0; i < shuffledPoints.length; i += itemsPerRow) {
                 const div = document.createElement('div');
                 div.className = `carousel-item ${i === 0 ? 'active' : ''}`;
-                div.innerHTML = '<div class="d-flex gallery-row">';
+                const row = document.createElement('div');
+                row.className = 'd-flex gallery-row';
+                div.appendChild(row);
                 
                 for (let j = i; j < i + itemsPerSlide && j < shuffledPoints.length; j++) {
                     const point = shuffledPoints[j];
