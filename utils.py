@@ -130,10 +130,13 @@ def get_historical_data(latitude, longitude, time_period):
                 import os
                 from datetime import datetime
                 
+                if not os.path.exists('static/images/historical'):
+                    os.makedirs('static/images/historical', exist_ok=True)
+                
                 response = requests.get(image_url)
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 filename = f"historical_{timestamp}.jpg"
-                filepath = f"static/images/historical/{filename}"
+                filepath = os.path.join('static/images/historical', filename)
                 
                 with open(filepath, 'wb') as f:
                     f.write(response.content)
