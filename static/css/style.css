@@ -68,6 +68,35 @@
     }
 }
 
+.gallery-carousel {
+    margin: 20px 0;
+}
+
+.carousel-item img {
+    height: 300px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.image-location-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+#imageModal .modal-dialog {
+    max-width: 90%;
+}
+
+#modalImage {
+    max-height: 80vh;
+}
+
 /* Form styles */
 .form-label {
     margin-bottom: 0.5rem;

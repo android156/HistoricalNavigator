@@ -3,6 +3,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const historicalInfo = document.getElementById('historicalInfo');
     const timePeriodInput = document.getElementById('timePeriod');
     const locationInput = document.getElementById('locationInput');
+    
+    // Initialize gallery
+    initializeGallery();
+    
+    // Initialize modal events
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    document.querySelectorAll('.carousel-item img').forEach(img => {
+        img.addEventListener('click', function() {
+            document.getElementById('modalImage').src = this.src;
+            document.getElementById('imageModalLabel').textContent = this.getAttribute('data-location');
+            imageModal.show();
+        });
+    });
 
     function parseTimePeriod(input) {
         input = input.trim();
@@ -123,5 +136,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    
+    async function initializeGallery() {
+        try {
+            const response = await fetch('/api/historical-points');
+            const points = await response.json();
+            
+            // Shuffle points array
+            const shuffledPoints = points.sort(() => Math.random() - 0.5);
+            
+            const carouselInner = document.getElementById('carouselInner');
+            carouselInner.innerHTML = '';
+            
+            shuffledPoints.forEach((point, index) => {
+                if (point.image_url && point.response_data) {
+                    const div = document.createElement('div');
+                    div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+                    
+                    const locationText = `${point.response_data.territory}, ${point.time_period}`;
+                    
+                    div.innerHTML = `
+                        <div class="image-location-overlay">${locationText}</div>
+                        <img src="${point.image_url}" 
+                             class="d-block w-100" 
+                             alt="Historical Image"
+                             data-location="${locationText}">
+                    `;
+                    
+                    carouselInner.appendChild(div);
+                }
+            });
+        } catch (error) {
+            console.error('Error loading gallery:', error);
+        }
+    }
 });
