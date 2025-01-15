@@ -162,43 +162,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const itemsPerRow = window.innerWidth < 768 ? 1 : 
-                              window.innerWidth < 992 ? 2 : 
-                              window.innerWidth < 1200 ? 3 : 4;
-            
-            document.documentElement.style.setProperty('--items-per-row', itemsPerRow);
-
-            for (let i = 0; i < shuffledPoints.length; i += itemsPerRow) {
+            shuffledPoints.forEach((point, index) => {
                 const div = document.createElement('div');
-                div.className = `carousel-item ${i === 0 ? 'active' : ''}`;
-                const row = document.createElement('div');
-                row.className = 'd-flex gallery-row';
-                div.appendChild(row);
+                div.className = `carousel-item ${index === 0 ? 'active' : ''}`;
                 
-                for (let j = i; j < i + itemsPerRow && j < shuffledPoints.length; j++) {
-                    const point = shuffledPoints[j];
-                    const locationText = `${point.response_data.territory}, ${point.time_period}`;
-                    
-                    div.innerHTML += `
-                        <div class="gallery-column">
-                            <div class="gallery-item">
-                                <div class="image-location-overlay">${locationText}</div>
-                                <img src="${point.image_url}" 
-                                     class="img-fluid" 
-                                     alt="Historical Image"
-                                     data-location="${locationText}">
-                            </div>
-                        </div>
-                    `;
-                }
+                const locationText = `${point.response_data.territory}, ${point.time_period}`;
                 
-                div.innerHTML += '</div>';
+                div.innerHTML = `
+                    <div class="image-location-overlay">${locationText}</div>
+                    <img src="${point.image_url}" 
+                         class="d-block w-100" 
+                         alt="Historical Image"
+                         data-location="${locationText}">
+                `;
+                
                 carouselInner.appendChild(div);
-            }
-
-            // Update carousel on window resize
-            window.addEventListener('resize', () => {
-                initializeGallery();
             });
         } catch (error) {
             console.error('Error loading gallery:', error);
