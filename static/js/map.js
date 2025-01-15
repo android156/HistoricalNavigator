@@ -234,12 +234,46 @@ async function loadHistoricalPoints() {
         historicalPoints = [];
 
         const pointCollection = new ymaps.GeoObjectCollection();
-        const MIN_DISTANCE = 0.0005; // Увеличенное минимальное расстояние
+        const MIN_DISTANCE = 0.0005; // Минимальное расстояние между точками
         const points = [...data];
         const adjustedPoints = new Map();
 
-        // Сортируем точки по времени, чтобы сохранить последовательность
-        points.sort((a, b) => a.time_period.localeCompare(b.time_period));
+        // Находим усредненный центр для перекрывающихся точек
+        const groupPoints = {};
+        points.forEach(point => {
+            const baseKey = `${Math.round(point.latitude * 1000) / 1000},${Math.round(point.longitude * 1000) / 1000}`;
+            if (!groupPoints[baseKey]) {
+                groupPoints[baseKey] = [];
+            }
+            groupPoints[baseKey].push(point);
+        });
+
+        // Обрабатываем каждую группу точек
+        Object.entries(groupPoints).forEach(([baseKey, groupedPoints]) => {
+            if (groupedPoints.length === 1) {
+                // Если точка одна, используем её оригинальные координаты
+                const point = groupedPoints[0];
+                adjustedPoints.set(`${point.latitude},${point.longitude}`, point);
+            } else {
+                // Для группы точек вычисляем средний центр и размещаем по спирали
+                const avgLat = groupedPoints.reduce((sum, p) => sum + p.latitude, 0) / groupedPoints.length;
+                const avgLon = groupedPoints.reduce((sum, p) => sum + p.longitude, 0) / groupedPoints.length;
+
+                groupedPoints.forEach((point, index) => {
+                    if (index === 0) {
+                        // Первая точка в центре
+                        adjustedPoints.set(`${avgLat},${avgLon}`, point);
+                    } else {
+                        // Остальные точки по спирали
+                        const angle = ((index - 1) * Math.PI / 4);
+                        const spiralRadius = MIN_DISTANCE * (1 + Math.floor((index - 1) / 8));
+                        const adjustedLat = avgLat + spiralRadius * Math.cos(angle);
+                        const adjustedLon = avgLon + spiralRadius * Math.sin(angle);
+                        adjustedPoints.set(`${adjustedLat},${adjustedLon}`, point);
+                    }
+                });
+            }
+        });
 
         points.forEach((point, index) => {
             let baseCoords = [point.latitude, point.longitude];
