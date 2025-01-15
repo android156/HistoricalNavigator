@@ -72,6 +72,17 @@
     margin: 20px 0;
 }
 
+.gallery-row {
+    display: flex;
+    gap: 10px;
+    padding: 0 5px;
+}
+
+.gallery-column {
+    flex: 1;
+    min-width: 0;
+}
+
 .gallery-item {
     position: relative;
     height: 300px;

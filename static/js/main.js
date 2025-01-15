@@ -169,14 +169,14 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let i = 0; i < shuffledPoints.length; i += itemsPerSlide) {
                 const div = document.createElement('div');
                 div.className = `carousel-item ${i === 0 ? 'active' : ''}`;
-                div.innerHTML = '<div class="row g-2">';
+                div.innerHTML = '<div class="d-flex gallery-row">';
                 
                 for (let j = i; j < i + itemsPerSlide && j < shuffledPoints.length; j++) {
                     const point = shuffledPoints[j];
                     const locationText = `${point.response_data.territory}, ${point.time_period}`;
                     
                     div.innerHTML += `
-                        <div class="col-${12/itemsPerSlide}">
+                        <div class="gallery-column">
                             <div class="gallery-item">
                                 <div class="image-location-overlay">${locationText}</div>
                                 <img src="${point.image_url}" 
