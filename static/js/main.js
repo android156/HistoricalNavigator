@@ -165,55 +165,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Check if we should display dual images
             const containerWidth = galleryCarousel.offsetWidth;
-            const containerHeight = 300; // Fixed height from CSS
+            const containerHeight = 300;
             const isDual = containerWidth / containerHeight > 2.5;
-            const itemsPerSlide = isDual ? 2 : 1;
 
-            const createSlide = (points, isActive = false) => {
-                const div = document.createElement('div');
-                div.className = `carousel-item ${isActive ? 'active' : ''}`;
+            galleryCarousel.classList.toggle('gallery-dual', isDual);
 
-                div.innerHTML = points.map(point => {
-                    const locationText = `${point.response_data.territory}, ${point.time_period}`;
-                    return `
-                        <div class="gallery-image-container">
-                            <div class="image-location-overlay">${locationText}</div>
-                            <img src="${point.image_url}" 
-                                 alt="Historical Image"
-                                 data-location="${locationText}">
-                        </div>
-                    `;
-                }).join('');
+            // Create all slides
+            for (let i = 0; i < shuffledPoints.length; i++) {
+                const points = isDual ? 
+                    [shuffledPoints[i], i + 1 < shuffledPoints.length ? shuffledPoints[i + 1] : null].filter(Boolean) : 
+                    [shuffledPoints[i]];
 
-                return div;
-            };
-
-            if (isDual) {
-                for (let i = 0; i < shuffledPoints.length; i += 2) {
-                    const currentPoints = [
-                        shuffledPoints[i],
-                        i + 1 < shuffledPoints.length ? shuffledPoints[i + 1] : null
-                    ].filter(Boolean);
-
-                    if (currentPoints.length > 0) {
-                        const slide = createSlide(currentPoints, i === 0);
-                        carouselInner.appendChild(slide);
-                    }
+                if (points.length > 0) {
+                    carouselInner.appendChild(createSlide(points, i === 0));
                 }
-
-                // Initialize Bootstrap carousel with proper settings
-                new bootstrap.Carousel(document.getElementById('imageCarousel'), {
-                    interval: 5000,
-                    ride: true,
-                    wrap: true
-                });
-            } else {
-                shuffledPoints.forEach((point, index) => {
-                    carouselInner.appendChild(
-                        createSlide([point], index === 0)
-                    );
-                });
             }
+
+            // Initialize carousel
+            const carousel = new bootstrap.Carousel(document.getElementById('imageCarousel'), {
+                interval: 5000,
+                wrap: true
+            });
+
+            // Add event listeners for smooth transitions
+            const carouselElement = document.getElementById('imageCarousel');
+            carouselElement.addEventListener('slide.bs.carousel', function (e) {
+                const direction = e.direction === 'left' ? 1 : -1;
+                e.relatedTarget.style.transform = `translateX(${direction * 100}%)`;
+            });
+
 
             // Reinitialize click handlers for the modal
             document.querySelectorAll('.carousel-item img').forEach(img => {
