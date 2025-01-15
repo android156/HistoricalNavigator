@@ -167,12 +167,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const containerWidth = galleryCarousel.offsetWidth;
             const containerHeight = 300; // Fixed height from CSS
             const isDual = containerWidth / containerHeight > 2.5;
+            const itemsPerSlide = isDual ? 2 : 1;
             
             if (isDual) {
                 galleryCarousel.classList.add('gallery-dual');
                 
                 // Create slides with two images each
-                for (let i = 0; i < shuffledPoints.length; i += (isDual ? 2 : 1)) {
+                for (let i = 0; i < shuffledPoints.length; i += itemsPerSlide) {
                     const div = document.createElement('div');
                     div.className = `carousel-item ${i === 0 ? 'active' : ''}`;
                     

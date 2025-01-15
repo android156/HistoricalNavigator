@@ -71,19 +71,37 @@
 .gallery-carousel {
     margin: 20px 0;
     position: relative;
+    overflow: hidden;
 }
 
 .carousel-item {
     display: flex;
     gap: 10px;
     justify-content: center;
+    transition: transform .6s ease-in-out;
 }
 
 .gallery-image-container {
     position: relative;
     flex: 1;
-    max-width: 50%;
+    max-width: calc(50% - 5px);
     display: block;
+}
+
+.gallery-dual .carousel-item.active,
+.gallery-dual .carousel-item-next,
+.gallery-dual .carousel-item-prev {
+    display: flex;
+}
+
+.gallery-dual .carousel-item-end.active,
+.gallery-dual .carousel-item-next {
+    transform: translateX(100%);
+}
+
+.gallery-dual .carousel-item-start.active, 
+.gallery-dual .carousel-item-prev {
+    transform: translateX(-100%);
 }
 
 .carousel-item img {
