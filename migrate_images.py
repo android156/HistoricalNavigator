@@ -10,12 +10,27 @@ logging.basicConfig(level=logging.INFO)
 
 def download_image(url, save_path):
     try:
-        response = requests.get(url)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=30)
+        
+        if response.status_code == 403:
+            logging.error("Authentication error when downloading image. The URL may have expired.")
+            return False
+            
         response.raise_for_status()
         
+        if not response.content:
+            logging.error("Downloaded image is empty")
+            return False
+            
         with open(save_path, 'wb') as f:
             f.write(response.content)
         return True
+    except requests.Timeout:
+        logging.error(f"Timeout downloading image from {url}")
+        return False
     except Exception as e:
         logging.error(f"Error downloading image from {url}: {str(e)}")
         return False
