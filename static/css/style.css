@@ -127,12 +127,12 @@
 
 .carousel-item-next,
 .active.carousel-item-end {
-    transform: translateX(-100%) !important;
+    transform: translateX(100%) !important;
 }
 
 .carousel-item-prev,
 .active.carousel-item-start {
-    transform: translateX(100%) !important;
+    transform: translateX(-100%) !important;
 }
 
 .gallery-dual .gallery-image-container {

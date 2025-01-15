@@ -173,25 +173,25 @@ document.addEventListener('DOMContentLoaded', function() {
             function createSlide(points, isActive) {
                 const slide = document.createElement('div');
                 slide.className = `carousel-item ${isActive ? 'active' : ''}`;
-                
+
                 points.forEach(point => {
                     const container = document.createElement('div');
                     container.className = 'gallery-image-container';
-                    
+
                     const locationOverlay = document.createElement('div');
                     locationOverlay.className = 'image-location-overlay';
                     locationOverlay.textContent = `${point.response_data.territory}, ${point.time_period}`;
-                    
+
                     const img = document.createElement('img');
                     img.src = point.image_url;
                     img.alt = 'Historical Image';
                     img.setAttribute('data-location', `${point.response_data.territory}, ${point.time_period}`);
-                    
+
                     container.appendChild(locationOverlay);
                     container.appendChild(img);
                     slide.appendChild(container);
                 });
-                
+
                 return slide;
             }
 
@@ -212,8 +212,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 keyboard: true,
                 pause: 'hover',
                 ride: 'carousel',
-                wrap: true
+                wrap: true,
+                direction: 'rtl'
             });
+
+            // Custom slide functionality
+            const prevButton = document.querySelector('.carousel-control-prev');
+            const nextButton = document.querySelector('.carousel-control-next');
+
+            function moveSlide(direction) {
+                const activeSlide = document.querySelector('.carousel-item.active');
+                const slides = document.querySelectorAll('.carousel-item');
+                const currentIndex = Array.from(slides).indexOf(activeSlide);
+                let nextIndex;
+
+                if (direction === 'next') {
+                    nextIndex = (currentIndex + 1) % slides.length;
+                } else {
+                    nextIndex = (currentIndex - 1 + slides.length) % slides.length;
+                }
+
+                slides[currentIndex].classList.remove('active');
+                slides[nextIndex].classList.add('active');
+            }
+
+            prevButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                moveSlide('prev');
+            });
+
+            nextButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                moveSlide('next');
+            });
+
+            // Auto-slide
+            setInterval(() => {
+                moveSlide('next');
+            }, 5000);
 
             // Функция для обновления количества изображений в слайде
             const updateGalleryLayout = () => {
@@ -221,18 +257,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const containerWidth = galleryCarousel.offsetWidth;
                 const containerHeight = 300;
                 const isDual = containerWidth / containerHeight > 2.5;
-                
+
                 galleryCarousel.classList.toggle('gallery-dual', isDual);
-                
+
                 // Перестраиваем слайды
                 const carouselInner = document.getElementById('carouselInner');
                 carouselInner.innerHTML = '';
-                
+
                 for (let i = 0; i < shuffledPoints.length; i++) {
                     const points = isDual ? 
                         [shuffledPoints[i], i + 1 < shuffledPoints.length ? shuffledPoints[i + 1] : null].filter(Boolean) : 
                         [shuffledPoints[i]];
-                    
+
                     if (points.length > 0) {
                         carouselInner.appendChild(createSlide(points, i === 0));
                     }
@@ -242,16 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Обновляем layout при изменении размера окна
             window.addEventListener('resize', updateGalleryLayout);
             updateGalleryLayout(); // Инициализация
-
-            // Add controls functionality
-            document.querySelector('.carousel-control-prev').addEventListener('click', () => {
-                carousel.prev();
-            });
-            
-            document.querySelector('.carousel-control-next').addEventListener('click', () => {
-                carousel.next();
-            });
-
 
             // Reinitialize click handlers for the modal
             document.querySelectorAll('.carousel-item img').forEach(img => {
