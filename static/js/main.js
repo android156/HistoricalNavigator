@@ -4,17 +4,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const timePeriodInput = document.getElementById('timePeriod');
     const locationInput = document.getElementById('locationInput');
     
-    // Initialize gallery
-    initializeGallery();
-    
-    // Initialize modal events
+    // Initialize modal
     const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-    document.querySelectorAll('.carousel-item img').forEach(img => {
-        img.addEventListener('click', function() {
-            document.getElementById('modalImage').src = this.src;
-            document.getElementById('imageModalLabel').textContent = this.getAttribute('data-location');
-            imageModal.show();
+    
+    // Initialize gallery
+    initializeGallery().then(() => {
+        // Initialize modal events after gallery is loaded
+        document.querySelectorAll('.carousel-item img').forEach(img => {
+            img.addEventListener('click', function() {
+                document.getElementById('modalImage').src = this.src;
+                document.getElementById('imageModalLabel').textContent = this.getAttribute('data-location');
+                imageModal.show();
+            });
         });
+    }).catch(error => {
+        console.error('Error initializing gallery:', error);
     });
 
     function parseTimePeriod(input) {
