@@ -229,47 +229,14 @@ async function loadHistoricalPoints() {
             return;
         }
 
-        // Функция для кластеризации точек
-        function clusterPoints(points, zoom) {
-            const clusters = {};
-            const MAX_ZOOM = 23; // Максимальный зум карты
-            const CLUSTER_THRESHOLD = Math.floor(MAX_ZOOM * 2/3); // Порог для кластеризации
-            
-            if (zoom <= CLUSTER_THRESHOLD) {
-                // Стандартная кластеризация для малого зума
-                const gridSize = 0.01 / Math.pow(2, zoom - 8);
-                points.forEach(point => {
-                    const key = Math.round(point.latitude / gridSize) + ',' + 
-                               Math.round(point.longitude / gridSize);
-                    if (!clusters[key]) {
-                        clusters[key] = [];
-                    }
-                    clusters[key].push(point);
-                });
-            } else {
-                // Распределение точек при большом зуме
-                const MIN_DISTANCE = 0.0001 * Math.pow(2, MAX_ZOOM - zoom); // Минимальное расстояние между точками
-                
-                points.forEach(point => {
-                    let adjustedLat = point.latitude;
-                    let adjustedLon = point.longitude;
-                    let key = adjustedLat + ',' + adjustedLon;
-                    
-                    // Поиск свободного места для точки
-                    while (clusters[key]) {
-                        adjustedLat += MIN_DISTANCE * Math.cos(2 * Math.PI * Math.random());
-                        adjustedLon += MIN_DISTANCE * Math.sin(2 * Math.PI * Math.random());
-                        key = adjustedLat + ',' + adjustedLon;
-                    }
-                    
-                    clusters[key] = [{
-                        ...point,
-                        latitude: adjustedLat,
-                        longitude: adjustedLon
-                    }];
-                });
-            }
-            return clusters;
+        // Преобразование точек в формат для отображения
+        function preparePoints(points) {
+            const result = {};
+            points.forEach(point => {
+                const key = `${point.latitude},${point.longitude}`;
+                result[key] = [point];
+            });
+            return result;
         }
 
         // Функция для распределения точек по спирали
@@ -300,62 +267,55 @@ async function loadHistoricalPoints() {
             map.geoObjects.removeAll();
             historicalPoints = [];
 
-            // Создаем ObjectManager для эффективного управления точками
-            const objectManager = new ymaps.ObjectManager({
-                clusterize: true,
-                gridSize: 32,
-                clusterDisableClickZoom: true,
-                clusterOpenBalloonOnClick: false,
-                clusterIconLayout: 'default#pieChart',
-                clusterIconPieChartRadius: 25,
-                clusterIconPieChartCoreRadius: 10,
-                clusterIconPieChartStrokeWidth: 3,
-                geoObjectOpenBalloonOnClick: false
-            });
+            const pointCollection = new ymaps.GeoObjectCollection();
+            const MIN_DISTANCE = 0.0001; // Минимальное расстояние между точками
+            const points = Object.values(currentClusters).flat();
+            const usedPositions = new Set();
 
-            // Добавляем обработчик клика на кластер
-            objectManager.clusters.events.add('click', function (e) {
-                const cluster = objectManager.clusters.getById(e.get('objectId'));
-                const center = cluster.geometry.coordinates;
-                const currentZoom = map.getZoom();
-                
-                // Находим оптимальный зум для разбиения кластера
-                let targetZoom = currentZoom + 1;
-                let found = false;
-                
-                // Проверяем следующие уровни зума, пока не найдем подходящий
-                while (targetZoom <= 19 && !found) {
-                    const bounds = map.getBounds();
-                    const testClusters = clusterPoints(data, targetZoom);
-                    
-                    // Считаем точки в видимой области карты
-                    const visiblePoints = Object.values(testClusters)
-                        .flat()
-                        .filter(point => {
-                            return point.latitude >= bounds[0][0] &&
-                                   point.latitude <= bounds[1][0] &&
-                                   point.longitude >= bounds[0][1] &&
-                                   point.longitude <= bounds[1][1];
-                        });
+            points.forEach((point, index) => {
+                let adjustedLat = point.latitude;
+                let adjustedLon = point.longitude;
+                let spiralStep = 0;
+                let angle = 0;
 
-                    // Если точек больше одной и они образуют как минимум 2 кластера
-                    if (visiblePoints.length >= cluster.properties.geoObjects &&
-                        Object.keys(testClusters).length >= 2) {
-                        found = true;
+                // Ищем свободное место по спирали
+                while (true) {
+                    const key = `${adjustedLat.toFixed(6)},${adjustedLon.toFixed(6)}`;
+                    if (!usedPositions.has(key)) {
+                        usedPositions.add(key);
                         break;
                     }
-                    targetZoom++;
+
+                    // Увеличиваем угол и радиус для следующей позиции в спирали
+                    angle += Math.PI / 4;
+                    spiralStep += MIN_DISTANCE / (2 * Math.PI);
+                    adjustedLat = point.latitude + spiralStep * Math.cos(angle);
+                    adjustedLon = point.longitude + spiralStep * Math.sin(angle);
                 }
 
-                // Если не нашли подходящий зум, используем максимально возможный
-                if (!found) {
-                    targetZoom = Math.min(currentZoom + 2, 19);
-                }
+                const placemark = new ymaps.Placemark(
+                    [adjustedLat, adjustedLon],
+                    {
+                        balloonContentHeader: `${point.response_data.territory}, ${point.time_period}`,
+                        balloonContentBody: point.response_data.description || '',
+                        hintContent: `${point.response_data.territory}, ${point.time_period}`
+                    },
+                    {
+                        preset: 'islands#nightCircleDotIcon',
+                        iconColor: '#0066ff'
+                    }
+                );
 
-                map.setCenter(center, targetZoom, { duration: 300 });
+                placemark.events.add('click', () => {
+                    if (point.response_data) {
+                        displayHistoricalData(point.response_data);
+                    }
+                });
+
+                pointCollection.add(placemark);
             });
 
-            map.geoObjects.add(objectManager);
+            map.geoObjects.add(pointCollection);
 
             // Преобразуем точки в формат ObjectManager
             const objects = {
