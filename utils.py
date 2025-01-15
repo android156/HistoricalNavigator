@@ -57,7 +57,7 @@ def log_action(action_type, action_data):
     except Exception as e:
         logging.error(f"Failed to log action: {str(e)}")
 
-def get_historical_data(latitude, longitude, time_period):
+def get_historical_data(latitude, longitude, time_period, regenerate_image=False):
     try:
         logging.info(f"Getting historical data for coordinates ({latitude}, {longitude}) and period {time_period}")
 
