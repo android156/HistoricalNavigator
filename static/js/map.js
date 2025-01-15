@@ -234,34 +234,52 @@ async function loadHistoricalPoints() {
         historicalPoints = [];
 
         const pointCollection = new ymaps.GeoObjectCollection();
-        const MIN_DISTANCE = 0.0001; // Минимальное расстояние между точками
-        const usedPositions = new Map();
+        const MIN_DISTANCE = 0.0005; // Увеличенное минимальное расстояние
+        const points = [...data];
+        const adjustedPoints = new Map();
 
-        data.forEach((point, index) => {
+        // Сортируем точки по времени, чтобы сохранить последовательность
+        points.sort((a, b) => a.time_period.localeCompare(b.time_period));
+
+        points.forEach((point, index) => {
             let baseCoords = [point.latitude, point.longitude];
             let adjustedCoords = [...baseCoords];
-            
-            // Проверяем, есть ли уже точки рядом
-            const nearby = Array.from(usedPositions.entries()).find(([coords, _]) => {
-                const [lat, lon] = coords.split(',').map(Number);
-                const dist = Math.sqrt(
-                    Math.pow(lat - baseCoords[0], 2) + 
-                    Math.pow(lon - baseCoords[1], 2)
-                );
-                return dist < MIN_DISTANCE;
-            });
+            let iteration = 0;
+            const maxIterations = 16; // Максимальное количество попыток размещения
 
-            if (nearby) {
-                // Если есть близкие точки, размещаем по спирали
-                const angle = (index * Math.PI / 4);
-                const spiralRadius = MIN_DISTANCE * (1 + Math.floor(index / 8));
+            // Проверяем перекрытие и корректируем позицию
+            while (iteration < maxIterations) {
+                let hasOverlap = false;
+
+                for (let [existingCoords] of adjustedPoints) {
+                    const [existingLat, existingLon] = existingCoords.split(',').map(Number);
+                    const dist = Math.sqrt(
+                        Math.pow(adjustedCoords[0] - existingLat, 2) + 
+                        Math.pow(adjustedCoords[1] - existingLon, 2)
+                    );
+
+                    if (dist < MIN_DISTANCE) {
+                        hasOverlap = true;
+                        break;
+                    }
+                }
+
+                if (!hasOverlap) {
+                    break;
+                }
+
+                // Размещаем точки по спирали с увеличивающимся радиусом
+                const angle = (iteration * Math.PI / 4);
+                const spiralRadius = MIN_DISTANCE * (1 + Math.floor(iteration / 8));
                 adjustedCoords = [
                     baseCoords[0] + spiralRadius * Math.cos(angle),
                     baseCoords[1] + spiralRadius * Math.sin(angle)
                 ];
+
+                iteration++;
             }
 
-            usedPositions.set(`${adjustedCoords[0]},${adjustedCoords[1]}`, point);
+            adjustedPoints.set(`${adjustedCoords[0]},${adjustedCoords[1]}`, point);
 
             const placemark = new ymaps.Placemark(
                 adjustedCoords,
@@ -272,7 +290,10 @@ async function loadHistoricalPoints() {
                 },
                 {
                     preset: 'islands#nightCircleDotIcon',
-                    iconColor: '#0066ff'
+                    iconColor: '#0066ff',
+                    zIndex: 1000 + index,
+                    zIndexHover: 1100 + index,
+                    zIndexActive: 1200 + index
                 }
             );
 
