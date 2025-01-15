@@ -74,14 +74,29 @@
     overflow: hidden;
 }
 
+.carousel {
+    position: relative;
+}
+
+.carousel-inner {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
 .carousel-item {
     display: none;
-    gap: 15px;
-    justify-content: center;
+    float: left;
+    width: 100%;
+    margin-right: -100%;
+    backface-visibility: hidden;
+    transition: transform .6s ease-in-out;
 }
 
 .carousel-item.active {
     display: flex;
+    gap: 15px;
+    justify-content: center;
 }
 
 .gallery-image-container {
