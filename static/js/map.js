@@ -274,14 +274,21 @@ function updateMarkers() {
     const objectManager = new ymaps.ObjectManager({
         clusterize: true,
         gridSize: 32,
-        clusterDisableClickZoom: false,
-        clusterOpenBalloonOnClick: true,
-        clusterBalloonContentLayout: 'cluster#balloonCarousel',
+        clusterDisableClickZoom: true,
+        clusterOpenBalloonOnClick: false,
         clusterIconLayout: 'default#pieChart',
         clusterIconPieChartRadius: 25,
         clusterIconPieChartCoreRadius: 10,
         clusterIconPieChartStrokeWidth: 3,
         geoObjectOpenBalloonOnClick: false
+    });
+
+    // Добавляем обработчик клика на кластер
+    objectManager.clusters.events.add('click', function (e) {
+        const cluster = objectManager.clusters.getById(e.get('objectId'));
+        const center = cluster.geometry.coordinates;
+        const zoom = map.getZoom() + 2;
+        map.setCenter(center, zoom, { duration: 300 });
     });
 
     map.geoObjects.add(objectManager);
