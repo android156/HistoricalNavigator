@@ -232,16 +232,43 @@ async function loadHistoricalPoints() {
         // Функция для кластеризации точек
         function clusterPoints(points, zoom) {
             const clusters = {};
-            const gridSize = 0.01 / Math.pow(2, zoom - 8); // Уменьшенный размер сетки
-
-            points.forEach(point => {
-                const key = Math.round(point.latitude / gridSize) + ',' + 
-                           Math.round(point.longitude / gridSize);
-                if (!clusters[key]) {
-                    clusters[key] = [];
-                }
-                clusters[key].push(point);
-            });
+            const MAX_ZOOM = 23; // Максимальный зум карты
+            const CLUSTER_THRESHOLD = Math.floor(MAX_ZOOM * 2/3); // Порог для кластеризации
+            
+            if (zoom <= CLUSTER_THRESHOLD) {
+                // Стандартная кластеризация для малого зума
+                const gridSize = 0.01 / Math.pow(2, zoom - 8);
+                points.forEach(point => {
+                    const key = Math.round(point.latitude / gridSize) + ',' + 
+                               Math.round(point.longitude / gridSize);
+                    if (!clusters[key]) {
+                        clusters[key] = [];
+                    }
+                    clusters[key].push(point);
+                });
+            } else {
+                // Распределение точек при большом зуме
+                const MIN_DISTANCE = 0.0001 * Math.pow(2, MAX_ZOOM - zoom); // Минимальное расстояние между точками
+                
+                points.forEach(point => {
+                    let adjustedLat = point.latitude;
+                    let adjustedLon = point.longitude;
+                    let key = adjustedLat + ',' + adjustedLon;
+                    
+                    // Поиск свободного места для точки
+                    while (clusters[key]) {
+                        adjustedLat += MIN_DISTANCE * Math.cos(2 * Math.PI * Math.random());
+                        adjustedLon += MIN_DISTANCE * Math.sin(2 * Math.PI * Math.random());
+                        key = adjustedLat + ',' + adjustedLon;
+                    }
+                    
+                    clusters[key] = [{
+                        ...point,
+                        latitude: adjustedLat,
+                        longitude: adjustedLon
+                    }];
+                });
+            }
             return clusters;
         }
 
