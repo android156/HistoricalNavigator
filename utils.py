@@ -1,20 +1,34 @@
+import base64
 import json
 import logging
 from datetime import datetime
+from pathlib import Path
 from models import MapAction, HistoricalQuery, HistoricalPoint # Added HistoricalPoint import
 from app import db
 import os
-from openai import OpenAI
+from openai import DefaultHttpxClient, OpenAI
 from museum_api import museum_client
 
 # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
 # do not change this unless explicitly requested by the user
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    logging.error("OPENAI_API_KEY not found in environment variables")
-    raise ValueError("OPENAI_API_KEY is required")
+class MissingAPIKeyError(RuntimeError):
+    """Raised when a feature requires an API key that is not configured."""
 
-openai = OpenAI(api_key=OPENAI_API_KEY)
+
+def get_openai_client():
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise MissingAPIKeyError("OPENAI_API_KEY is required")
+
+    proxy_url = os.environ.get("PROXY_URL")
+    if proxy_url:
+        logging.info("Using configured proxy for OpenAI requests")
+        return OpenAI(
+            api_key=api_key,
+            http_client=DefaultHttpxClient(proxy=proxy_url),
+        )
+
+    return OpenAI(api_key=api_key)
 
 def generate_historical_image(territory, time_period, historical_data):
     try:
@@ -31,15 +45,24 @@ def generate_historical_image(territory, time_period, historical_data):
         Обязательно включите характерные элементы эпохи, людей в исторических костюмах, архитектуру и предметы быта."""
 
         logging.info(f"Generating image for {territory} in period {time_period}")
-        response = openai.images.generate(
-            model="dall-e-3",
+        response = get_openai_client().images.generate(
+            model=os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-2"),
             prompt=prompt,
             size="1024x1024",
-            quality="hd",
+            quality=os.environ.get("OPENAI_IMAGE_QUALITY", "medium"),
             n=1
         )
 
-        return response.data[0].url
+        image = response.data[0]
+        if image.b64_json:
+            return base64.b64decode(image.b64_json)
+        if image.url:
+            import requests
+
+            download = requests.get(image.url, timeout=60)
+            download.raise_for_status()
+            return download.content
+        raise ValueError("OpenAI returned no image data")
     except Exception as e:
         logging.error(f"Error generating historical image: {str(e)}")
         return None
@@ -56,6 +79,13 @@ def log_action(action_type, action_data):
         logging.info(f"Action logged: {action_type} - {json.dumps(action_data)}")
     except Exception as e:
         logging.error(f"Failed to log action: {str(e)}")
+
+
+def serialize_museum_artifacts(artifacts):
+    return [
+        artifact if isinstance(artifact, dict) else artifact.to_dict()
+        for artifact in artifacts
+    ]
 
 def get_historical_data(latitude, longitude, time_period):
     try:
@@ -92,7 +122,7 @@ def get_historical_data(latitude, longitude, time_period):
         Для local_events используйте информацию о событиях в радиусе 50км от указанных координат. Если информации нет, расширяйте радиус поиска до ближайшего исторического центра.
         Пожалуйста, предоставьте всю информацию на русском языке. Используйте исторически корректные русские названия для мест, событий и имён правителей."""
 
-        response = openai.chat.completions.create(
+        response = get_openai_client().chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "Вы - эксперт по истории. Предоставляйте информацию на русском языке, используя исторически корректную терминологию."},
@@ -110,42 +140,32 @@ def get_historical_data(latitude, longitude, time_period):
                 historical_data['territory'],
                 time_period
             )
-            historical_data['museum_artifacts'] = [artifact.to_dict() for artifact in artifacts]
+            historical_data['museum_artifacts'] = serialize_museum_artifacts(artifacts)
             logging.info(f"Successfully retrieved {len(artifacts)} museum artifacts")
         except Exception as e:
             logging.error(f"Error getting museum artifacts: {str(e)}")
             historical_data['museum_artifacts'] = []
 
         # Генерируем изображение на основе полученных данных
-        image_url = generate_historical_image(
-            historical_data['territory'], 
+        image_bytes = generate_historical_image(
+            historical_data['territory'],
             time_period,
             historical_data
         )
 
         # Сохраняем изображение локально
-        if image_url:
+        if image_bytes:
             try:
-                import requests
-                import os
-                from datetime import datetime
-                
-                if not os.path.exists('static/images/historical'):
-                    os.makedirs('static/images/historical', exist_ok=True)
-                
-                response = requests.get(image_url)
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                filename = f"historical_{timestamp}.jpg"
-                filepath = os.path.join('static/images/historical', filename)
-                
-                with open(filepath, 'wb') as f:
-                    f.write(response.content)
-                
-                # Обновляем URL на локальный путь
+                image_directory = Path('static/images/historical')
+                image_directory.mkdir(parents=True, exist_ok=True)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+                filename = f"historical_{timestamp}.png"
+                (image_directory / filename).write_bytes(image_bytes)
+
                 historical_data['image_url'] = f"/static/images/historical/{filename}"
             except Exception as e:
                 logging.error(f"Error saving image locally: {str(e)}")
-                historical_data['image_url'] = image_url
+                historical_data['image_url'] = None
 
         # Сохраняем точку в базу данных
         point = HistoricalPoint(
@@ -153,13 +173,15 @@ def get_historical_data(latitude, longitude, time_period):
             longitude=longitude,
             time_period=time_period,
             response_data=historical_data,
-            image_url=image_url
+            image_url=historical_data.get('image_url')
         )
         db.session.add(point)
         db.session.commit()
         logging.info("Successfully stored point in database")
 
         return historical_data
+    except MissingAPIKeyError:
+        raise
     except Exception as e:
         logging.error(f"Error getting historical data: {str(e)}", exc_info=True)
         raise Exception(f"Failed to retrieve historical data: {str(e)}")

@@ -15,3 +15,8 @@ dependencies = [
     "sqlalchemy>=2.0.37",
     "trafilatura>=2.0.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

@@ -2,7 +2,7 @@ import os
 from app import app
 from datetime import datetime
 from flask import render_template, jsonify, request
-from utils import get_historical_data, log_action
+from utils import MissingAPIKeyError, get_historical_data, log_action
 import logging
 from models import MapAction, HistoricalQuery, HistoricalPoint # Added import for HistoricalPoint
 
@@ -45,6 +45,9 @@ def get_history():
     except ValueError as ve:
         logging.error(f"Validation error: {str(ve)}")
         return jsonify({'error': str(ve)}), 400
+    except MissingAPIKeyError as me:
+        logging.error(f"Configuration error: {str(me)}")
+        return jsonify({'error': str(me)}), 503
     except Exception as e:
         error_msg = str(e)
         logging.error(f"Error processing historical data request: {error_msg}", exc_info=True)

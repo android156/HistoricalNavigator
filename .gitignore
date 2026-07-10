@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data
+instance/*.db-journal
+instance/*.db-wal
+instance/*.db-shm
+instance/smoke*.db
+smoke_response*.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

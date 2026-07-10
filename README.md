@@ -12,7 +12,7 @@
   - Период (например: 1274-1311)
   - Дата (например: 23.06.1984)
 - Генерация исторических данных через GPT-4
-- Визуализация исторических сцен через DALL-E 3
+- Визуализация исторических сцен через OpenAI Images
 - Определение адреса по координатам
 - Логирование действий пользователя
 - Кластеризация исторических точек
@@ -22,10 +22,39 @@
 
 - **Backend**: Python, Flask, SQLAlchemy
 - **Frontend**: JavaScript, Bootstrap, Yandex Maps
-- **AI**: OpenAI (GPT-4, DALL-E 3)
+- **AI**: OpenAI (`gpt-4o`, `gpt-image-2` по умолчанию)
 - **База данных**: SQLite
 
-## 🔧 Установка
+## 🔧 Локальная установка
+
+```bash
+uv sync
+cp .env.example .env
+# заполните .env реальными ключами, затем загрузите их в текущую shell-сессию
+set -a; source .env; set +a
+uv run python main.py
+```
+
+Приложение доступно по адресу: `http://127.0.0.1:5000`.
+
+Переменные окружения:
+
+- `YANDEX_MAPS_API_KEY` — нужен для интерактивной карты и геокодирования. Без ключа главная страница всё равно рендерится, но карта не загрузится.
+- `OPENAI_API_KEY` — нужен для `/api/historical-data`. Без ключа endpoint возвращает `503`, а не роняет приложение.
+- `PROXY_URL` — опциональный HTTP/HTTPS-прокси только для запросов OpenAI, например `http://user:password@proxy.example:8080`.
+- `OPENAI_IMAGE_MODEL` — опциональная модель генерации изображений, по умолчанию `gpt-image-2`.
+- `OPENAI_IMAGE_QUALITY` — качество изображения, по умолчанию `medium`.
+- `FLASK_SECRET_KEY` — секрет Flask-сессий.
+- `DATABASE_URL` — опционально, по умолчанию используется `sqlite:///history.db`.
+
+## 🧪 Проверки
+
+```bash
+uv run pytest -q
+python -m py_compile app.py main.py models.py utils.py museum_api.py migrate_images.py clean_points.py check_points.py
+```
+
+## 🔧 Запуск на Replit
 
 1. Добавьте API ключи в секреты Replit:
    - `YANDEX_MAPS_API_KEY`
